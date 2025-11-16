@@ -10,9 +10,7 @@ import Header from "@/components/header/header"
 
 const Records: React.FC = () => {
   return (
-    <LayoutProvider>
-      <div className="flex h-screen w-full bg-app">
-        <Sidebar />
+        <div className="flex h-screen w-full bg-gray-50">
         <main className="flex-1 flex flex-col p-8">
           <div className="w-full max-w-5xl mx-auto">
             <TableFilterProvider initialKeys={columns.map((c) => c.key)}>
