@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { columns } from "@/features/tableRecords/columns"
-import { useTableFilter } from "@/components/table/TableFilterContext"
+import { useTableFilter } from "@/components/table/tableFilterStore"
 import { useSort } from "@/components/table/sortStore"
 import { LABELS, type SortOption } from "@/components/table/sortConfig"
 

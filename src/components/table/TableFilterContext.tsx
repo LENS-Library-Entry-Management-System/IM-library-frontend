@@ -1,13 +1,5 @@
 import * as React from "react"
-
-type TableFilterContextValue = {
-  selected: Set<string>
-  isSelected: (key: string) => boolean
-  toggle: (key: string, checked?: boolean) => void
-  setSelectedKeys: (keys: string[]) => void
-}
-
-const TableFilterContext = React.createContext<TableFilterContextValue | null>(null)
+import { TableFilterContext } from "./tableFilterStore"
 
 export function TableFilterProvider({
   initialKeys,
@@ -26,7 +18,8 @@ export function TableFilterProvider({
     setSelected((prev) => {
       const next = new Set(prev)
       if (checked === undefined) {
-        next.has(key) ? next.delete(key) : next.add(key)
+        if (next.has(key)) next.delete(key)
+        else next.add(key)
       } else if (checked) next.add(key)
       else next.delete(key)
       return next
@@ -45,10 +38,4 @@ export function TableFilterProvider({
   return <TableFilterContext.Provider value={value}>{children}</TableFilterContext.Provider>
 }
 
-export function useTableFilter() {
-  const ctx = React.useContext(TableFilterContext)
-  if (!ctx) throw new Error("useTableFilter must be used within TableFilterProvider")
-  return ctx
-}
-
-export default TableFilterContext
+export default TableFilterProvider

@@ -5,7 +5,17 @@ import { columns } from "./columns"
 import { type SortOption, useSort } from "@/components/table/sortStore"
 import { useSearch } from "@/components/table/searchStore"
 
-const sortRows = (rowsData: any[], option: SortOption) => {
+type Row = {
+  id: string
+  firstName: string
+  lastName: string
+  department: string
+  college: string
+  logDate: string
+  logTime: string
+}
+
+const sortRows = (rowsData: Row[], option: SortOption) => {
   const copy = [...rowsData]
   switch (option) {
     case "date_desc":
@@ -52,7 +62,7 @@ const TableRecords = () => {
       const fields = [r.id, r.firstName, r.lastName, r.department, r.college, r.logDate, r.logTime]
       return fields.some((f) => String(f ?? "").toLowerCase().includes(q))
     })
-  }, [rows, query])
+  }, [query])
 
   const sorted = React.useMemo(() => sortRows(filtered, sort), [filtered, sort])
 

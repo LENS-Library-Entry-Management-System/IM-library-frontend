@@ -20,7 +20,7 @@ import {
   PaginationEllipsis,
 } from "@/components/ui/pagination"
 import { Button } from "@/components/ui/button"
-import { useTableFilter } from "@/components/table/TableFilterContext"
+import { useTableFilter } from "@/components/table/tableFilterStore"
 
 type CellValue = React.ReactNode | string | number | null | undefined
 
@@ -116,7 +116,10 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
   }, [columns, data])
 
   // Consume filter context. Create a stable default callback and override if a provider is present.
-  const defaultIsSelected = React.useCallback((k: string): boolean => (void k, true), [])
+  const defaultIsSelected: (k: string) => boolean = React.useCallback((k: string): boolean => {
+    void k
+    return true
+  }, [])
   let isSelected = defaultIsSelected
   try {
     const ctx = useTableFilter()
