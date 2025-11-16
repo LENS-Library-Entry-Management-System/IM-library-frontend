@@ -15,8 +15,21 @@ export default function DeleteButton({
   }
 
   return (
-    <Button variant="destructive" size="sm" onClick={handleClick} className="ml-2">
-      <Trash2Icon className="h-4 w-4" />
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleClick}
+      className="
+        rounded-md
+        h-9
+        border border-gray-300
+        bg-white
+        p-2.5
+        text-gray-500
+        hover:bg-gray-100
+      "
+    >
+      <Trash2Icon className="h-5 w-5" strokeWidth={2} />
     </Button>
   )
 }

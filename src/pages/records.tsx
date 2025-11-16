@@ -11,20 +11,26 @@ import Header from "@/components/header/header"
 const Records: React.FC = () => {
   return (
     <LayoutProvider>
-      <div className="flex h-screen w-full bg-app">
+      <div className="flex h-screen w-full bg-[#F7F7FF] overflow-hidden">
         <Sidebar />
-        <main className="flex-1 flex flex-col p-8">
-          <div className="w-full max-w-5xl mx-auto">
+
+        <main className="flex-1 flex flex-col overflow-y-auto px-10 py-12">
+          <div className="w-full max-w-[1500px] mx-auto">
+
             <TableFilterProvider initialKeys={columns.map((c) => c.key)}>
               <SortProvider>
                 <SearchProvider>
+
                   <Header />
-                  <div className="mt-6 w-full">
+
+                  <div className="mt-5">
                     <TableRecords />
                   </div>
+
                 </SearchProvider>
               </SortProvider>
             </TableFilterProvider>
+
           </div>
         </main>
       </div>
