@@ -28,7 +28,7 @@ export default function Sidebar() {
         border-r
         bg-white
         px-6
-        py-15
+        py-16
         flex
         flex-col
       "
