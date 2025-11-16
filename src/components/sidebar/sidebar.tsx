@@ -2,7 +2,7 @@ import { useLayout } from "@/components/layout/useLayout"
 import type { SectionKey } from "@/components/layout/LayoutContext"
 
 import logo from "@/assets/logo.svg"
-import intersect from "@/assets/intersect.svg"
+import intersect from "@/assets/Intersect.svg"
 
 import { LayoutDashboard, Users, Building2, HelpCircle } from "lucide-react"
 import type { JSX } from "react"
