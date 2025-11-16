@@ -116,7 +116,7 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
   }, [columns, data])
 
   // Consume filter context. Create a stable default callback and override if a provider is present.
-  const defaultIsSelected = React.useCallback(() => true, [])
+  const defaultIsSelected = React.useCallback((k: string): boolean => (void k, true), [])
   let isSelected = defaultIsSelected
   try {
     const ctx = useTableFilter()

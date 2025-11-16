@@ -1,4 +1,3 @@
-import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Trash2Icon } from "lucide-react"
 

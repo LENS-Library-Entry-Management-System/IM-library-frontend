@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 export type SectionKey = "All" | "Students" | "Faculties" | "Status"
@@ -9,7 +10,7 @@ type LayoutContextType = {
 
 const LayoutContext = React.createContext<LayoutContextType | undefined>(undefined)
 
-export const LayoutProvider: React.FC = ({ children }) => {
+export const LayoutProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const [section, setSection] = React.useState<SectionKey>("Students")
 
   return (

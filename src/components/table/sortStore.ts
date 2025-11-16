@@ -1,5 +1,6 @@
 import * as React from "react"
 import type { SortOption } from "@/components/table/sortConfig"
+export type { SortOption }
 
 const defaultSort: SortOption = "date_desc"
 
