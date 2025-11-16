@@ -26,10 +26,17 @@ export default function Sidebar() {
         w-64
         h-screen
         border-r
-        bg-white
-        px-6
-        py-15
-        flex
+        className="
+          relative
+          w-64
+          h-screen
+          border-r
+          bg-white
+          px-6
+          py-16
+          flex
+          flex-col
+        "
         flex-col
       "
     >
