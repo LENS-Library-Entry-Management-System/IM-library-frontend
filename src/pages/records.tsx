@@ -14,7 +14,7 @@ const Records: React.FC = () => {
       <div className="flex h-screen w-full bg-[#F7F7FF] overflow-hidden">
         <Sidebar />
 
-        <main className="flex-1 flex flex-col overflow-y-auto px-10 py-12">
+        <main className="flex-1 flex flex-col overflow-y-auto px-5 md:py-3 lg:py-5">
           <div className="w-full max-w-[1500px] mx-auto">
 
             <TableFilterProvider initialKeys={columns.map((c) => c.key)}>

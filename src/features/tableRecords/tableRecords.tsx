@@ -2,11 +2,13 @@ import * as React from "react"
 import ReusableTable from "@/components/table/reusableTable"
 import { rows } from "@/mockData/records"
 import { columns } from "./columns"
+import { useLayout } from "@/components/layout/useLayout"
 import { type SortOption, useSort } from "@/components/table/sortStore"
 import { useSearch } from "@/components/table/searchStore"
 
 type Row = {
   id: string
+  role: string
   firstName: string
   lastName: string
   department: string
@@ -64,22 +66,42 @@ const TableRecords = () => {
   const { sort } = useSort()
   const { query } = useSearch()
 
+  const { section } = useLayout()
+
   const filtered = React.useMemo(() => {
     const q = String(query || "").trim().toLowerCase()
-    if (!q) return rows
-    return rows.filter((r) => {
+    // First filter rows based on the sidebar section selection (Students, Faculties, All)
+    const filteredBySection = rows.filter((r) => {
+      if (section === "Students") return r.role === "student"
+      if (section === "Faculties") return r.role === "faculty"
+      return true
+    })
+
+    if (!q) return filteredBySection
+    return filteredBySection.filter((r) => {
       const fields = [r.id, r.firstName, r.lastName, r.department, r.college, r.logDate, r.logTime]
       return fields.some((f) => String(f ?? "").toLowerCase().includes(q))
     })
-  }, [query])
+  }, [query, section])
 
   const sorted = React.useMemo(() => sortRows(filtered, sort), [filtered, sort])
+
+  // Map columns to update the 'id' header label based on the selected section
+  const mappedColumns = React.useMemo(() => {
+    return columns.map((c) => {
+      if (c.key === "id") {
+        const header = section === "Students" ? "Student ID" : section === "Faculties" ? "Faculty ID" : "ID"
+        return { ...c, header }
+      }
+      return c
+    })
+  }, [section])
 
   return (
     <div>
       <ReusableTable
         data={sorted}
-        columns={columns}
+        columns={mappedColumns}
         pageSize={10}
         showSelection
         showActions
