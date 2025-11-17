@@ -19,6 +19,7 @@ const colleges = [
 export const rows = Array.from({ length: 90 }).map((_, i) => {
   const date = new Date(2023, 0, 1 + i); // generate different dates
   const logDate = date.toLocaleDateString("en-US");
+  const logTimestamp = date.getTime();
   const logTime = `${String(8 + (i % 10)).padStart(2, "0")}:${String(i % 60).padStart(2, "0")}`;
 
   return {
@@ -27,8 +28,9 @@ export const rows = Array.from({ length: 90 }).map((_, i) => {
     lastName: lastNames[i % lastNames.length],
     department: departments[i % departments.length],
     college: colleges[i % colleges.length],
-    logDate,
-    logTime,
+      logDate,
+      logTime,
+      logTimestamp,
   };
 });
 
