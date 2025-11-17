@@ -140,7 +140,7 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
             <TableRow>
               {showSelection ? (
                 <TableHead className="w-12">
-                  <input aria-label="Select all" type="checkbox" checked={allSelected} onChange={toggleAll} className="h-4 w-4 rounded border-gray-300 text-primary" />
+                  <input aria-label="Select all" type="checkbox" checked={allSelected} onChange={toggleAll} className="h-4 w-4 rounded border-gray-300 text-primary accent-[#1D398A]" />
                 </TableHead>
               ) : null}
 
@@ -159,7 +159,7 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
               <TableRow key={String(row.id)} data-state={selected[String(row.id)] ? "selected" : ""}>
                 {showSelection ? (
                   <TableCell className="w-12">
-                    <input aria-label={`Select ${row.id}`} type="checkbox" checked={!!selected[String(row.id)]} onChange={() => toggleRow(String(row.id))} className="h-4 w-4 rounded border-gray-300 text-primary" />
+                    <input aria-label={`Select ${row.id}`} type="checkbox" checked={!!selected[String(row.id)]} onChange={() => toggleRow(String(row.id))} className="h-4 w-4 rounded border-gray-300 text-primary accent-[#1D398A]" />
                   </TableCell>
                 ) : null}
 

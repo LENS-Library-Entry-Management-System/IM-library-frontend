@@ -8,16 +8,24 @@ export default function Header() {
   const { section } = useLayout()
 
   return (
-    <header className=" flex w-full items-center justify-between gap-4 rounded border bg-muted/50 p-4">
-      <div>
-        <h1 className="text-2xl font-bold uppercase">{section}</h1>
-      </div>
+    <header className="flex w-full items-start justify-between rounded-lg border bg-white p-4">
+      
+      <h1 className="text-3xl font-extrabold uppercase tracking-wide text-[#1D398A]">
+        {section}
+      </h1>
 
-      <div className="flex items-center">
-        <SearchInput />
-        <FilterButton />
-        <DownloadButton />
-        <DeleteButton />
+      <div className="flex flex-col items-end gap-3">
+        
+        <div>
+          <DownloadButton />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <SearchInput />
+          <FilterButton />
+          <DeleteButton />
+        </div>
+
       </div>
     </header>
   )

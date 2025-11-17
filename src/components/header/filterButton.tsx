@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,6 +13,7 @@ import { columns } from "@/features/tableRecords/columns"
 import { useTableFilter } from "@/components/table/tableFilterStore"
 import { useSort } from "@/components/table/sortStore"
 import { LABELS, type SortOption } from "@/components/table/sortConfig"
+import { SlidersHorizontal } from "lucide-react"
 
 export default function FilterButton() {
   const { isSelected, toggle } = useTableFilter()
@@ -22,8 +22,22 @@ export default function FilterButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="
+            inline-flex items-center gap-2
+            h-9
+            border border-[#1D398A]
+            bg-white
+            px-5 py-2.5
+            text-xs font-medium
+            text-[#1D398A]
+            hover:bg-blue-50
+          "
+        >
           Filter
+          <SlidersHorizontal size={18} strokeWidth={2.2} />
         </Button>
       </DropdownMenuTrigger>
 
@@ -41,7 +55,10 @@ export default function FilterButton() {
         <DropdownMenuSeparator />
 
         <DropdownMenuLabel>Sort records</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={sort} onValueChange={(v) => setSort(v as SortOption)}>
+        <DropdownMenuRadioGroup
+          value={sort}
+          onValueChange={(v) => setSort(v as SortOption)}
+        >
           {(Object.keys(LABELS) as SortOption[]).map((k) => (
             <DropdownMenuRadioItem key={k} value={k}>
               {LABELS[k]}
