@@ -51,8 +51,15 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: #1D398A;
   --primary-foreground: #17357D;
-  --secondary: linear-gradient(to right, #0575E6 0%, #02298A 85%, #021B79 100%);
-  --secondary-foreground: linear-gradient(to left, #0575E6 0%, #02298A 85%, #021B79 100%);
+  
+  /* Solid colors for regular use */
+  --secondary: #0575E6;
+  --secondary-foreground: #ffffff;
+  
+  /* Gradients for special use */
+  --gradient-primary: linear-gradient(to bottom, #0575E6 0%, #02298A 85%, #021B79 100%);
+  --gradient-primary-reverse: linear-gradient(to top, #0575E6 0%, #02298A 85%, #021B79 100%);
+  
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -85,8 +92,8 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: #1D398A;
   --primary-foreground: #17357D;
-  --secondary: linear-gradient(to right, #0575E6 0%, #02298A 85%, #021B79 100%);
-  --secondary-foreground: linear-gradient(to left, #0575E6 0%, #02298A 85%, #021B79 100%);
+  --secondary: #0575E6;
+  --secondary-foreground: #ffffff;
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
@@ -110,11 +117,27 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Gradient text utility */
 .text-gradient {
-  background: var(--secondary);
+  background: var(--gradient-primary);
   background-clip: text;
-  -webkit-background-clip: text; 
+  -webkit-background-clip: text;
   color: transparent;
+}
+
+/* Gradient background utility */
+.bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.bg-gradient-primary-reverse {
+  background: var(--gradient-primary-reverse);
+}
+
+/* Button with gradient background */
+.btn-gradient {
+  background: var(--gradient-primary);
+  color: white;
 }
 
 @layer base {
