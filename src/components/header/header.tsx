@@ -10,7 +10,7 @@ export default function Header() {
   return (
     <header className="flex w-full items-start justify-between rounded-lg border bg-white p-4">
       
-      <h1 className="text-3xl font-extrabold uppercase tracking-wide text-[#1D398A]">
+      <h1 className="text-3xl font-extrabold uppercase tracking-wide text-primary">
         {section}
       </h1>
 
