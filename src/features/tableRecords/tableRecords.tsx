@@ -13,15 +13,24 @@ type Row = {
   college: string
   logDate: string
   logTime: string
+  logTimestamp?: number
 }
 
 const sortRows = (rowsData: Row[], option: SortOption) => {
   const copy = [...rowsData]
+  const getTs = (r: Row) =>
+    typeof r.logTimestamp === "number"
+      ? r.logTimestamp
+      : (() => {
+          const [m, d, y] = String(r.logDate || "").split("/").map((n) => Number(n) || 0)
+          if (!m || !d || !y) return 0
+          return new Date(y, m - 1, d).getTime()
+        })()
   switch (option) {
     case "date_desc":
-      return copy.sort((a, b) => (Date.parse(String(b.logDate)) || 0) - (Date.parse(String(a.logDate)) || 0))
+      return copy.sort((a, b) => getTs(b) - getTs(a))
     case "date_asc":
-      return copy.sort((a, b) => (Date.parse(String(a.logDate)) || 0) - (Date.parse(String(b.logDate)) || 0))
+      return copy.sort((a, b) => getTs(a) - getTs(b))
     case "time_desc":
       return copy.sort((a, b) => {
         const [ah, am] = String(a.logTime || "0:0").split(":").map((n) => Number(n) || 0)
