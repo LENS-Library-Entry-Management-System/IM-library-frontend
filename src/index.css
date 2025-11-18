@@ -49,10 +49,17 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --primary: #1D398A;
+  --primary-foreground: #17357D;
+  
+  /* Solid colors for regular use */
+  --secondary: #0575E6;
+  --secondary-foreground: #ffffff;
+  
+  /* Gradients for special use */
+  --gradient-primary: linear-gradient(to bottom, #0575E6 0%, #02298A 85%, #021B79 100%);
+  --gradient-primary-reverse: linear-gradient(to top, #0575E6 0%, #02298A 85%, #021B79 100%);
+  
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -83,10 +90,10 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --primary: #1D398A;
+  --primary-foreground: #17357D;
+  --secondary: #0575E6;
+  --secondary-foreground: #ffffff;
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
@@ -108,6 +115,29 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* Gradient text utility */
+.text-gradient {
+  background: var(--gradient-primary);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Gradient background utility */
+.bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.bg-gradient-primary-reverse {
+  background: var(--gradient-primary-reverse);
+}
+
+/* Button with gradient background */
+.btn-gradient {
+  background: var(--gradient-primary);
+  color: white;
 }
 
 @layer base {

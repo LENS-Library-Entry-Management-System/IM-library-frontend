@@ -28,11 +28,11 @@ export default function FilterButton() {
           className="
             inline-flex items-center gap-2
             h-9
-            border border-[#1D398A]
+            border border-primary
             bg-white
             px-5 py-2.5
             text-xs font-medium
-            text-[#1D398A]
+            text-primary
             hover:bg-blue-50
           "
         >

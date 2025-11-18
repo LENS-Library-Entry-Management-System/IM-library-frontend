@@ -37,8 +37,8 @@ export default function SearchInput({
           border border-gray-300
           text-sm
           placeholder:text-gray-400
-          focus-visible:ring-[#1D398A]
-          focus-visible:border-[#1D398A]
+          focus-visible:ring-primary
+          focus-visible:border-primary
         "
       />
     </div>
