@@ -93,14 +93,14 @@ export function StudentForm({
   }
 
   const legendClass =
-    "absolute -top-3 left-4 bg-gray-50 px-2 text-primary font-semibold text-sm"
+    "absolute -top-3 left-4 bg-gray-50 px-2 text-primary font-semibold text-sm rounded"
 
   const wrapperClass =
     "relative border border-gray-300 rounded-md px-4 pt-4 pb-2"
 
   return (
     <div
-      className={cn("w-full max-w-lg space-y-6", className)}
+      className={cn("w-full max-w-xl mx-auto space-y-6", className)}
       onSubmit={handleSubmit}
     >
       <FieldSet>
