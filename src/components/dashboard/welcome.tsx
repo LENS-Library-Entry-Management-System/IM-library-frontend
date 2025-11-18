@@ -29,7 +29,7 @@ export default function Welcome() {
         <img
           src={LogoWhite}
           alt="LENS Logo"
-          className="w-full max-w-[1200px] h-auto"
+          className="w-full max-w-xxl h-auto"
         />
       </div>
 
