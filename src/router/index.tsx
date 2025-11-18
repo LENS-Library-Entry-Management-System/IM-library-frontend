@@ -4,6 +4,7 @@ import App from '../App'
 import Records from '../pages/records'
 import SignUp from '@/pages/signUp'
 import EditInfo from '@/pages/editInfo'
+import SignIn from '@/pages/signin'
 
 export default function Router() {
   return (
@@ -14,6 +15,7 @@ export default function Router() {
           <Route path="records" element={<Records />} />
           <Route path="sign-up" element={<SignUp />} />
           <Route path="edit-info" element={<EditInfo />} />
+          <Route path="sign-in" element={<SignIn />} />
         </Route>
       </Routes>
     </BrowserRouter>
