@@ -1,4 +1,6 @@
 import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { login } from "@/api/auth"
 
 import { Field, FieldContent, FieldSet, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -12,17 +14,39 @@ const SignInForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ userId?: string; password?: string } | null>(null)
 
-  function handleSubmit(e: React.FormEvent) {
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setServerError(null)
 
     const newErrors: { userId?: string; password?: string } = {}
     if (!userId.trim()) newErrors.userId = "User ID is required"
     if (!password.trim()) newErrors.password = "Password is required"
 
     setErrors(Object.keys(newErrors).length ? newErrors : null)
+    if (Object.keys(newErrors).length) return
 
-    if (!Object.keys(newErrors).length) {
-      console.log("submit", { userId, password })
+    try {
+      setLoading(true)
+      const data = await login(userId, password)
+
+      const { accessToken, refreshToken, admin } = data || {}
+      if (accessToken) localStorage.setItem("accessToken", accessToken)
+      if (refreshToken) localStorage.setItem("refreshToken", refreshToken)
+      if (admin) localStorage.setItem("profile", JSON.stringify(admin))
+
+      navigate("/")
+    } catch (err: unknown) {
+      let message = "Login failed"
+      if (typeof err === "object" && err !== null && "message" in err) {
+        message = (err as Error).message
+      }
+      setServerError(message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -118,8 +142,17 @@ const SignInForm: React.FC = () => {
           </Field>
 
           {/* LOGIN BUTTON */}
-          <Button type="submit" className="w-full rounded-full h-12 text-white" variant="default">
-            Login
+          {serverError && (
+            <div className="text-center text-sm text-red-600">{serverError}</div>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full rounded-full h-12 text-white"
+            variant="default"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </Button>
 
           <div className="text-center">
