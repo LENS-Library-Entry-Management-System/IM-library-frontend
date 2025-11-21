@@ -112,8 +112,12 @@ const TableRecords = () => {
   }, [section, query, sort])
 
   const rowsSource = React.useMemo<EntryRow[]>(() => {
-    return data ?? (isLoading ? [] : (mockRows as unknown as EntryRow[]))
-  }, [data, isLoading])
+    // If the fetch errored, do not fall back to mock rows — show empty state so failures are visible.
+    if (isError) return []
+    if (data) return data
+    if (isLoading) return []
+    return mockRows as unknown as EntryRow[]
+  }, [data, isLoading, isError])
 
   // When using server-side fetching, the backend returns already-filtered and sorted rows.
   // Avoid applying client-side filter/sort in that case. This keeps behavior consistent with

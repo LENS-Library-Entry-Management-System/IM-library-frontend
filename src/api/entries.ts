@@ -146,7 +146,10 @@ export async function getEntries(opts?: GetEntriesOptions): Promise<EntriesRespo
       const status = String(item['status'] ?? '')
       const createdAt = item['createdAt'] ? String(item['createdAt']) : undefined
 
+      // Important: spread the raw `item` first so normalized/derived fields below override any conflicting keys
+      // This prevents raw backend fields from overwriting formatted values (logDate/logTime) or derived ids
       return {
+        ...item,
         id,
         role,
         firstName,
@@ -162,7 +165,6 @@ export async function getEntries(opts?: GetEntriesOptions): Promise<EntriesRespo
         logDate: dateStr,
         logTime: timeStr,
         logTimestamp: timestamp,
-        ...item,
       } as EntryRow
     })
 
