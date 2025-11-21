@@ -63,6 +63,11 @@ type ReusableTableProps = {
   showSelection?: boolean
   showActions?: boolean
   onEdit?: (row: Row) => void
+  // Server-side pagination support
+  serverSide?: boolean
+  totalCount?: number
+  page?: number
+  onPageChange?: (page: number) => void
 }
 
 const ReusableTable2: React.FC<ReusableTableProps> = ({
@@ -72,35 +77,64 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
   showSelection = false,
   showActions = false,
   onEdit,
+  serverSide = false,
+  totalCount,
+  page,
+  onPageChange,
 }) => {
   const [selected, setSelected] = React.useState<Record<string, boolean>>({})
-  const [page, setPage] = React.useState(1)
+  const [localPage, setLocalPage] = React.useState(1)
 
-  const totalPages = Math.max(1, Math.ceil(data.length / pageSize))
+  // Helper to compute a stable, unique key for a row.
+  // Prefer backend logId (unique entry id). If missing, combine user id + timestamp.
+  const getRowKey = React.useCallback((row: Row, idx: number) => {
+    // Row is indexable; read known possible fields and coerce safely without using `any`.
+    const logIdRaw = row["logId"] ?? row["log_id"] ?? null
+    const logId = typeof logIdRaw === "string" ? logIdRaw : typeof logIdRaw === "number" ? String(logIdRaw) : null
+    if (logId && logId.trim() !== "") return logId
+
+    const userIdRaw = row["userId"] ?? row["user_id"] ?? null
+    const userId = typeof userIdRaw === "string" ? userIdRaw : typeof userIdRaw === "number" ? String(userIdRaw) : null
+
+    const tsRaw = row["logTimestamp"] ?? row["log_timestamp"] ?? row["createdAt"] ?? idx
+    const ts = typeof tsRaw === "number" ? tsRaw : typeof tsRaw === "string" ? Number(tsRaw) || idx : idx
+
+    if (userId && userId.trim() !== "") return `${userId}-${ts}`
+
+    const idRaw = row["id"] ?? idx
+    const idStr = typeof idRaw === "string" ? idRaw : String(idRaw)
+    return `${idStr}-${ts}`
+  }, [])
+
+  const currentPage = serverSide ? (page ?? localPage) : localPage
+
+  const totalPages = serverSide && totalCount !== undefined ? Math.max(1, Math.ceil(totalCount / pageSize)) : Math.max(1, Math.ceil(data.length / pageSize))
 
   React.useEffect(() => {
-    if (page > totalPages) setPage(totalPages)
-  }, [totalPages, page])
+    if (!serverSide && localPage > totalPages) setLocalPage(totalPages)
+    if (serverSide && page && page > totalPages && onPageChange) onPageChange(totalPages)
+  }, [totalPages, localPage, serverSide, page, onPageChange])
 
-  const start = (page - 1) * pageSize
-  const pageRows = data.slice(start, start + pageSize)
+  const start = (currentPage - 1) * pageSize
+  const pageRows = serverSide ? data : data.slice(start, start + pageSize)
 
-  function toggleRow(id: string) {
-    setSelected((s) => ({ ...s, [id]: !s[id] }))
+  function toggleRow(key: string) {
+    setSelected((s) => ({ ...s, [key]: !s[key] }))
   }
 
-  const allSelected = pageRows.length > 0 && pageRows.every((r) => selected[String(r.id)])
+  const pageRowKeys = pageRows.map((r, i) => getRowKey(r, i))
+  const allSelected = pageRowKeys.length > 0 && pageRowKeys.every((k) => selected[String(k)])
   function toggleAll() {
     if (allSelected) {
       setSelected((s) => {
         const copy = { ...s }
-        pageRows.forEach((r) => delete copy[String(r.id)])
+        pageRowKeys.forEach((k) => delete copy[String(k)])
         return copy
       })
     } else {
       setSelected((s) => {
         const copy = { ...s }
-        pageRows.forEach((r) => (copy[String(r.id)] = true))
+        pageRowKeys.forEach((k) => (copy[String(k)] = true))
         return copy
       })
     }
@@ -130,7 +164,10 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
 
   const visibleColumns = React.useMemo(() => effectiveColumns.filter((c) => isSelected(c.key)), [effectiveColumns, isSelected])
 
-  const pages = getVisiblePages(totalPages, page)
+  const pages = getVisiblePages(totalPages, currentPage)
+
+  const totalDisplay = serverSide && typeof totalCount === 'number' ? totalCount : data.length
+  const endCount = Math.min(start + pageRows.length, totalDisplay)
 
   return (
     <div className="w-full">
@@ -155,50 +192,53 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
           </TableHeader>
 
           <TableBody>
-            {pageRows.map((row) => (
-              <TableRow key={String(row.id)} data-state={selected[String(row.id)] ? "selected" : ""}>
-                {showSelection ? (
-                  <TableCell className="w-12">
-                    <input aria-label={`Select ${row.id}`} type="checkbox" checked={!!selected[String(row.id)]} onChange={() => toggleRow(String(row.id))} className="h-4 w-4 rounded border-gray-300 text-primary accent-[#1D398A]" />
-                  </TableCell>
-                ) : null}
+            {pageRows.map((row, i) => {
+              const rowKey = getRowKey(row, i)
+              return (
+                <TableRow key={String(rowKey)} data-state={selected[String(rowKey)] ? "selected" : ""}>
+                  {showSelection ? (
+                    <TableCell className="w-12">
+                      <input aria-label={`Select ${String(row.id)}`} type="checkbox" checked={!!selected[String(rowKey)]} onChange={() => toggleRow(String(rowKey))} className="h-4 w-4 rounded border-gray-300 text-primary accent-[#1D398A]" />
+                    </TableCell>
+                  ) : null}
 
-                {visibleColumns.map((col) => (
-                  <TableCell key={col.key} className={col.className}>
-                    {col.render ? col.render(row) : (row[col.key] as React.ReactNode)}
-                  </TableCell>
-                ))}
+                  {visibleColumns.map((col) => (
+                    <TableCell key={col.key} className={col.className}>
+                      {col.render ? col.render(row) : (row[col.key] as React.ReactNode)}
+                    </TableCell>
+                  ))}
 
-                {showActions ? (
-                  <TableCell className="w-12 text-right">
-                    <Button variant="ghost" size="icon" aria-label="Edit row" onClick={() => onEdit && onEdit(row)}>
-                      <PencilIcon className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                ) : null}
-              </TableRow>
-            ))}
+                  {showActions ? (
+                    <TableCell className="w-12 text-right">
+                      <Button variant="ghost" size="icon" aria-label="Edit row" onClick={() => onEdit && onEdit(row)}>
+                        <PencilIcon className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  ) : null}
+                </TableRow>
+              )
+            })}
           </TableBody>
 
           <TableCaption>
-            Showing {start + 1} - {Math.min(start + pageRows.length, data.length)} of {data.length} records
+            Showing {start + 1} - {endCount} of {totalDisplay} records
           </TableCaption>
         </Table>
 
         <div className="mt-4 flex items-center justify-center">
           <Pagination aria-label="Table pagination">
             <PaginationContent>
-              <PaginationPrevious href="#" onClick={(e: React.MouseEvent) => { e.preventDefault(); setPage((p) => Math.max(1, p - 1)) }} />
+              <PaginationPrevious href="#" onClick={(e: React.MouseEvent) => { e.preventDefault(); const next = Math.max(1, currentPage - 1); if (serverSide && onPageChange) onPageChange(next); else setLocalPage(next); }} />
               {pages.map((p, i) => p === "..." ? (
                 <PaginationItem key={`e-${i}`}>
                   <PaginationEllipsis />
                 </PaginationItem>
               ) : (
                 <PaginationItem key={p}>
-                  <PaginationLink href="#" isActive={p === page} onClick={(e: React.MouseEvent) => { e.preventDefault(); setPage(Number(p)) }}>{String(p).padStart(2, "0")}</PaginationLink>
+                  <PaginationLink href="#" isActive={p === currentPage} onClick={(e: React.MouseEvent) => { e.preventDefault(); if (serverSide && onPageChange) onPageChange(Number(p)); else setLocalPage(Number(p)); }}>{String(p).padStart(2, "0")}</PaginationLink>
                 </PaginationItem>
               ))}
-              <PaginationNext href="#" onClick={(e: React.MouseEvent) => { e.preventDefault(); setPage((p) => Math.min(totalPages, p + 1)) }} />
+              <PaginationNext href="#" onClick={(e: React.MouseEvent) => { e.preventDefault(); const next = Math.min(totalPages, currentPage + 1); if (serverSide && onPageChange) onPageChange(next); else setLocalPage(next); }} />
             </PaginationContent>
           </Pagination>
         </div>
