@@ -8,9 +8,13 @@ const SignUp = () => {
 
   const handleSubmit = (values: StudentValues) => {
     // Map StudentValues to API payload
+    // NOTE: RFID scanning is not yet available in the dev environment. We generate
+    // a per-request development placeholder to avoid collisions during testing.
+    // Replace this with the real scanned tag when integration is ready.
+    const devRfid = `DEV-RFID-${Date.now()}-${Math.floor(Math.random() * 1000)}`
     const payload = {
       idNumber: values.studentId ?? '',
-        rfidTag: 'HARDCODED-RFID-0001',
+      rfidTag: devRfid,
       firstName: values.firstName ?? '',
       lastName: values.lastName ?? '',
       college: values.college,

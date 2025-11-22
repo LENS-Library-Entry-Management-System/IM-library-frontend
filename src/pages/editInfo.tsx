@@ -1,9 +1,10 @@
-// React import not required with the new JSX transform
+// React import required for hooks/types in this module
+import * as React from 'react'
 import Welcome from "@/components/dashboard/welcome"
 import Logo from "@/assets/logo.svg"
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
 import { useUpdateUser } from "@/hooks/form/useUpdateUser"
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const EditInfo = () => {
   const location = useLocation()
@@ -19,14 +20,30 @@ const EditInfo = () => {
   }
 
   const update = useUpdateUser()
+  const navigate = useNavigate()
+
+  // If this page is opened without a valid userId (malformed navigation or direct visit),
+  // redirect back to the records list instead of silently mutating a placeholder user.
+  React.useEffect(() => {
+    if (!state.userId) {
+      // Optionally we could show an inline error; redirecting keeps the UX simple.
+      navigate('/records', { replace: true })
+    }
+  }, [state.userId, navigate])
 
   const handleSubmit = (values: StudentValues) => {
-    // Use userId passed in location.state when available
-    const userId = state.userId ?? 123 // fallback placeholder
+    // Require a valid userId. If missing, abort and navigate back.
+    const userId = state.userId
+    if (!userId) {
+      alert('No user selected for editing. Returning to records.')
+      navigate('/records', { replace: true })
+      return
+    }
+
     const payload = {
       userId,
       idNumber: values.studentId ?? '',
-      // Do not include rfidTag here unless intentionally changing it; leaving undefined avoids unnecessary uniqueness checks
+      // Do not include rfidTag unless explicitly editing it; this avoids accidental uniqueness conflicts.
       firstName: values.firstName ?? '',
       lastName: values.lastName ?? '',
       college: values.college,
