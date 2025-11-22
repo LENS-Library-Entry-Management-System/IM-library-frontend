@@ -7,9 +7,22 @@ export interface LoginResponse {
   [key: string]: unknown
 }
 
+type ApiEnvelope<T = unknown> = {
+  success?: boolean
+  message?: string
+  data?: T
+  [key: string]: unknown
+}
+
 export async function login(username: string, password: string): Promise<LoginResponse> {
   try {
     const { data } = await client.post("/auth/login", { username, password })
+    // Backend returns { success, message, data: { admin, accessToken, refreshToken } }
+    // Normalize to return the inner `data` object when present so callers get tokens directly.
+    if (data && typeof data === 'object' && 'data' in data) {
+      const envelope = data as ApiEnvelope<LoginResponse>
+      if (envelope.data && typeof envelope.data === 'object') return envelope.data as LoginResponse
+    }
     return data as LoginResponse
   } catch (err: unknown) {
     if (typeof err === "object" && err !== null && "response" in err) {

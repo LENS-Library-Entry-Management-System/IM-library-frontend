@@ -24,6 +24,8 @@ export const columns: Column[] = [
   },
   { key: "department", header: "Department", className: "max-w-[220px] truncate" },
   { key: "college", header: "College", className: "max-w-[240px] truncate" },
+  { key: "yearLevel", header: "Year Level", className: "text-sm" },
+  { key: "entryMethod", header: "Method", className: "text-sm" },
   { key: "logDate", header: "Log Date" },
   { key: "logTime", header: "Log Time" },
 ]

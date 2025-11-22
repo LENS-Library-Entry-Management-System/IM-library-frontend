@@ -1,20 +1,22 @@
 import * as React from "react"
 import ReusableTable from "@/components/table/reusableTable"
-import { rows } from "@/mockData/records"
+import { rows as mockRows } from "@/mockData/records"
 import { columns } from "./columns"
 import { useLayout } from "@/components/layout/useLayout"
 import { type SortOption, useSort } from "@/components/table/sortStore"
 import { useSearch } from "@/components/table/searchStore"
+import { type EntryRow } from "@/api/entries"
+import { useEntries } from "@/hooks/queries/useEntries"
 
 type Row = {
   id: string
   role: string
-  firstName: string
-  lastName: string
-  department: string
-  college: string
-  logDate: string
-  logTime: string
+  firstName?: string
+  lastName?: string
+  department?: string
+  college?: string
+  logDate?: string
+  logTime?: string
   logTimestamp?: number
 }
 
@@ -68,10 +70,66 @@ const TableRecords = () => {
 
   const { section } = useLayout()
 
-  const filtered = React.useMemo(() => {
+  const [page, setPage] = React.useState<number>(1)
+
+
+  // Map UI sort option to backend sort parameter
+  const mapSortToBackend = React.useCallback((s: SortOption | undefined) => {
+    switch (s) {
+      case "date_desc":
+        return "entryTimestamp:desc"
+      case "date_asc":
+        return "entryTimestamp:asc"
+      case "time_desc":
+        return "entryTimestamp:desc"
+      case "time_asc":
+        return "entryTimestamp:asc"
+      case "name_az":
+        return "user.lastName:asc"
+      case "name_za":
+        return "user.lastName:desc"
+      default:
+        return undefined
+    }
+  }, [])
+
+  // Use TanStack Query hook to fetch entries from the backend. The hook caches
+  // and manages loading/refresh behavior; we send section/query/sort/page as keys.
+  const backendSort = mapSortToBackend(sort)
+  const userType = section === "Students" ? "student" : section === "Faculties" ? "faculty" : "all"
+  const entriesQuery = useEntries({ userType, query: String(query || "") || undefined, limit: 10, page, sort: backendSort })
+
+  const isLoading = entriesQuery.isLoading
+  const isError = entriesQuery.isError
+  const errorObj = entriesQuery.error
+  const resp = entriesQuery.data
+  const total = resp?.pagination?.total
+  const data = resp?.entries ?? null
+
+  // Reset to first page when filters or sort change
+  React.useEffect(() => {
+    setPage(1)
+  }, [section, query, sort])
+
+  const rowsSource = React.useMemo<EntryRow[]>(() => {
+    // If the fetch errored, do not fall back to mock rows — show empty state so failures are visible.
+    if (isError) return []
+    if (data) return data
+    if (isLoading) return []
+    return mockRows as unknown as EntryRow[]
+  }, [data, isLoading, isError])
+
+  // When using server-side fetching, the backend returns already-filtered and sorted rows.
+  // Avoid applying client-side filter/sort in that case. This keeps behavior consistent with
+  // production rules where filters and sort are applied by the API.
+  const useServerSide = true
+
+  const displayedRows = React.useMemo(() => {
+    if (useServerSide) return rowsSource
+
     const q = String(query || "").trim().toLowerCase()
     // First filter rows based on the sidebar section selection (Students, Faculties, All)
-    const filteredBySection = rows.filter((r) => {
+    const filteredBySection = rowsSource.filter((r) => {
       if (section === "Students") return r.role === "student"
       if (section === "Faculties") return r.role === "faculty"
       return true
@@ -82,9 +140,12 @@ const TableRecords = () => {
       const fields = [r.id, r.firstName, r.lastName, r.department, r.college, r.logDate, r.logTime]
       return fields.some((f) => String(f ?? "").toLowerCase().includes(q))
     })
-  }, [query, section])
+  }, [rowsSource, query, section, useServerSide])
 
-  const sorted = React.useMemo(() => sortRows(filtered, sort), [filtered, sort])
+  const sorted = React.useMemo(() => {
+    if (useServerSide) return displayedRows
+    return sortRows(displayedRows, sort)
+  }, [displayedRows, sort, useServerSide])
 
   // Map columns to update the 'id' header label based on the selected section
   const mappedColumns = React.useMemo(() => {
@@ -99,6 +160,8 @@ const TableRecords = () => {
 
   return (
     <div>
+      {isError ? <div className="mb-2 text-sm text-destructive">Error: {String((errorObj as Error)?.message ?? errorObj)}</div> : null}
+      {isLoading ? <div className="mb-2 text-sm text-muted-foreground">Loading entries...</div> : null}
       <ReusableTable
         data={sorted}
         columns={mappedColumns}
@@ -106,6 +169,10 @@ const TableRecords = () => {
         showSelection
         showActions
         onEdit={(row) => console.log("edit", row)}
+        serverSide
+        totalCount={total}
+        page={page}
+        onPageChange={(p) => setPage(p)}
       />
     </div>
   )
