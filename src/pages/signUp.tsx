@@ -1,10 +1,33 @@
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
 import Welcome from "@/components/dashboard/welcome"
 import Logo from "@/assets/logo.svg"
+import { useCreateUser } from "@/hooks/form/useCreateUser"
 
 const SignUp = () => {
+  const create = useCreateUser()
+
   const handleSubmit = (values: StudentValues) => {
-    console.log("SignUp submitted", values)
+    // Map StudentValues to API payload
+    const payload = {
+      idNumber: values.studentId ?? '',
+        rfidTag: 'HARDCODED-RFID-0001',
+      firstName: values.firstName ?? '',
+      lastName: values.lastName ?? '',
+      college: values.college,
+      department: values.department,
+      yearLevel: values.yearLevel,
+      userType: 'student' as const,
+    }
+
+    create.mutate(payload, {
+      onSuccess: () => {
+        // simple feedback — replace with app toast when available
+        alert('Student account created successfully')
+      },
+      onError: (err: unknown) => {
+        alert('Create failed: ' + String((err as Error)?.message ?? err))
+      },
+    })
   }
 
   return (

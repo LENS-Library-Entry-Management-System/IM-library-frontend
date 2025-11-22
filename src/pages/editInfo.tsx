@@ -2,19 +2,46 @@
 import Welcome from "@/components/dashboard/welcome"
 import Logo from "@/assets/logo.svg"
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
+import { useUpdateUser } from "@/hooks/form/useUpdateUser"
+import { useLocation } from 'react-router-dom'
 
-const editInfo = () => {
+const EditInfo = () => {
+  const location = useLocation()
+  const state = (location.state ?? {}) as { userId?: number | string; initialValues?: StudentValues }
+
   const initial: StudentValues = {
-    studentId: "2020-98765",
-    firstName: "Jane",
-    lastName: "Smith",
-    department: "Information Technology",
-    college: "School of IT",
-    yearLevel: "2nd Year",
+    studentId: state.initialValues?.studentId ?? "",
+    firstName: state.initialValues?.firstName ?? "",
+    lastName: state.initialValues?.lastName ?? "",
+    department: state.initialValues?.department ?? "",
+    college: state.initialValues?.college ?? "",
+    yearLevel: state.initialValues?.yearLevel ?? "",
   }
 
+  const update = useUpdateUser()
+
   const handleSubmit = (values: StudentValues) => {
-    console.log("Edit Info submitted", values)
+    // Use userId passed in location.state when available
+    const userId = state.userId ?? 123 // fallback placeholder
+    const payload = {
+      userId,
+      idNumber: values.studentId ?? '',
+      // Do not include rfidTag here unless intentionally changing it; leaving undefined avoids unnecessary uniqueness checks
+      firstName: values.firstName ?? '',
+      lastName: values.lastName ?? '',
+      college: values.college,
+      department: values.department,
+      yearLevel: values.yearLevel,
+    }
+
+    update.mutate(payload, {
+      onSuccess: () => {
+        alert('Student information updated.')
+      },
+      onError: (err: unknown) => {
+        alert('Update failed: ' + String((err as Error)?.message ?? err))
+      },
+    })
   }
     return (
     <div className="flex h-screen w-full">
@@ -44,4 +71,4 @@ const editInfo = () => {
   )
 }
 
-export default editInfo
+export default EditInfo
