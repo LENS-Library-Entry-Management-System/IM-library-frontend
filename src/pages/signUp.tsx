@@ -1,10 +1,37 @@
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
 import Welcome from "@/components/dashboard/welcome"
 import Logo from "@/assets/logo.svg"
+import { useCreateUser } from "@/hooks/form/useCreateUser"
 
 const SignUp = () => {
+  const create = useCreateUser()
+
   const handleSubmit = (values: StudentValues) => {
-    console.log("SignUp submitted", values)
+    // Map StudentValues to API payload
+    // NOTE: RFID scanning is not yet available in the dev environment. We generate
+    // a per-request development placeholder to avoid collisions during testing.
+    // Replace this with the real scanned tag when integration is ready.
+    const devRfid = `DEV-RFID-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+    const payload = {
+      idNumber: values.studentId ?? '',
+      rfidTag: devRfid,
+      firstName: values.firstName ?? '',
+      lastName: values.lastName ?? '',
+      college: values.college,
+      department: values.department,
+      yearLevel: values.yearLevel,
+      userType: 'student' as const,
+    }
+
+    create.mutate(payload, {
+      onSuccess: () => {
+        // simple feedback — replace with app toast when available
+        alert('Student account created successfully')
+      },
+      onError: (err: unknown) => {
+        alert('Create failed: ' + String((err as Error)?.message ?? err))
+      },
+    })
   }
 
   return (

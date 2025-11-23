@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useNavigate } from "react-router-dom"
 import ReusableTable from "@/components/table/reusableTable"
 import { rows as mockRows } from "@/mockData/records"
 import { columns } from "./columns"
@@ -6,7 +7,7 @@ import { useLayout } from "@/components/layout/useLayout"
 import { type SortOption, useSort } from "@/components/table/sortStore"
 import { useSearch } from "@/components/table/searchStore"
 import { type EntryRow } from "@/api/entries"
-import { useEntries } from "@/hooks/queries/useEntries"
+import { useEntries } from "@/hooks/tableRecords/useEntries"
 
 type Row = {
   id: string
@@ -111,6 +112,8 @@ const TableRecords = () => {
     setPage(1)
   }, [section, query, sort])
 
+  const navigate = useNavigate()
+
   const rowsSource = React.useMemo<EntryRow[]>(() => {
     // If the fetch errored, do not fall back to mock rows — show empty state so failures are visible.
     if (isError) return []
@@ -168,7 +171,20 @@ const TableRecords = () => {
         pageSize={10}
         showSelection
         showActions
-        onEdit={(row) => console.log("edit", row)}
+        onEdit={(row) => {
+          // Map an entry row to the edit page initial values and navigate
+          const r = row as Record<string, unknown>
+          const userId = (r['userId'] ?? r['user_id'] ?? r['id']) as string | undefined
+          const initialValues = {
+            studentId: String(r['id'] ?? ''),
+            firstName: String(r['firstName'] ?? ''),
+            lastName: String(r['lastName'] ?? ''),
+            department: String(r['department'] ?? ''),
+            college: String(r['college'] ?? ''),
+            yearLevel: String(r['yearLevel'] ?? ''),
+          }
+          navigate('/edit-info', { state: { userId, initialValues } })
+        }}
         serverSide
         totalCount={total}
         page={page}

@@ -1,20 +1,64 @@
-// React import not required with the new JSX transform
+// React import required for hooks/types in this module
+import * as React from 'react'
 import Welcome from "@/components/dashboard/welcome"
 import Logo from "@/assets/logo.svg"
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
+import { useUpdateUser } from "@/hooks/form/useUpdateUser"
+import { useLocation, useNavigate } from 'react-router-dom'
 
-const editInfo = () => {
+const EditInfo = () => {
+  const location = useLocation()
+  const state = (location.state ?? {}) as { userId?: number | string; initialValues?: StudentValues }
+
   const initial: StudentValues = {
-    studentId: "2020-98765",
-    firstName: "Jane",
-    lastName: "Smith",
-    department: "Information Technology",
-    college: "School of IT",
-    yearLevel: "2nd Year",
+    studentId: state.initialValues?.studentId ?? "",
+    firstName: state.initialValues?.firstName ?? "",
+    lastName: state.initialValues?.lastName ?? "",
+    department: state.initialValues?.department ?? "",
+    college: state.initialValues?.college ?? "",
+    yearLevel: state.initialValues?.yearLevel ?? "",
   }
 
+  const update = useUpdateUser()
+  const navigate = useNavigate()
+
+  // If this page is opened without a valid userId (malformed navigation or direct visit),
+  // redirect back to the records list instead of silently mutating a placeholder user.
+  React.useEffect(() => {
+    if (!state.userId) {
+      // Optionally we could show an inline error; redirecting keeps the UX simple.
+      navigate('/records', { replace: true })
+    }
+  }, [state.userId, navigate])
+
   const handleSubmit = (values: StudentValues) => {
-    console.log("Edit Info submitted", values)
+    // Require a valid userId. If missing, abort and navigate back.
+    const userId = state.userId
+    if (!userId) {
+      alert('No user selected for editing. Returning to records.')
+      navigate('/records', { replace: true })
+      return
+    }
+
+    const payload = {
+      userId,
+      idNumber: values.studentId ?? '',
+      // Do not include rfidTag unless explicitly editing it; this avoids accidental uniqueness conflicts.
+      firstName: values.firstName ?? '',
+      lastName: values.lastName ?? '',
+      college: values.college,
+      department: values.department,
+      yearLevel: values.yearLevel,
+    }
+
+    update.mutate(payload, {
+      onSuccess: () => {
+        alert('Student information updated.')
+      },
+      onError: (err: unknown) => {
+        alert('Update failed: ' + String((err as Error)?.message ?? err))
+      },
+    })
   }
     return (
     <div className="flex h-screen w-full">
@@ -44,4 +88,4 @@ const editInfo = () => {
   )
 }
 
-export default editInfo
+export default EditInfo
