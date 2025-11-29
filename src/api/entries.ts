@@ -52,6 +52,7 @@ export async function getEntries(opts?: GetEntriesOptions): Promise<EntriesRespo
       if (opts.userType && opts.userType !== 'all') body.userType = opts.userType
       if (opts.sort) body.sort = opts.sort
 
+      console.log('Calling POST /entries/filter with body:', body)
       console.debug('getEntries (filter) body:', body)
       const resp = await client.post('/entries/filter', body)
       responseData = resp.data
@@ -86,6 +87,7 @@ export async function getEntries(opts?: GetEntriesOptions): Promise<EntriesRespo
         }
       }
 
+      console.log('Calling GET /entries with params:', params)
       console.debug('getEntries params:', params)
       const resp = await client.get('/entries', { params })
       responseData = resp.data
