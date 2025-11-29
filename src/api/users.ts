@@ -37,4 +37,26 @@ export async function updateUser(payload: UpdateUserPayload) {
   return data
 }
 
-export default { createUser, updateUser }
+export async function getUserByToken(token: string) {
+  const { data } = await client.get('/entries/form', { params: { token } })
+  return data
+}
+
+export async function upsertUser(payload: {
+  token?: string
+  rfidTag?: string
+  idNumber?: string
+  firstName?: string
+  lastName?: string
+  email?: string
+  userType?: string
+  college?: string
+  department?: string
+  yearLevel?: string
+  status?: string
+}) {
+  const { data } = await client.post('/users/upsert', payload)
+  return data
+}
+
+export default { createUser, updateUser, getUserByToken, upsertUser }
