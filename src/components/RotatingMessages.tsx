@@ -4,26 +4,13 @@ type RMProps = { className?: string }
 
 export default function RotatingMessages({ className }: RMProps) {
   const messages = [
-     "Hey student! Scan this QR to unlock your library access.",
-     "Ready to use the library? Scan here to register your ID!",
-     "Quick heads up: Students, scan this to set up your library account.",
-     "No more writing forms—just scan this QR to join the library!",
-     "Students, tap your camera here and your library access is good to go.",
-     "Want smooth library check-ins? Scan this QR to register your ID.",
-     "Library crew only—scan here to activate your student ID.",
-     "Make life easier! Scan this and your ID is instantly registered for the library.",
-     "Students, scan this code and you're officially library-ready.",
-     "Skip the line, skip the paperwork—scan to register your library ID.",
-     "Your gateway to the library starts here. Scan this QR, student!",
-     "Students only: Scan this to hook your ID into the library system.",
-     "Let's get you in the library fast—scan to set up your ID.",
-     "Scan this QR and your library access will be smoother than ever.",
-     "Students, give this QR a quick scan to activate your library privileges.",
-     "Almost there—scan this to finish your library registration.",
-     "Your student ID wants to meet the library system. Scan to introduce them.",
-     "Hit that QR with your camera and get instant library access.",
-     "Students, tap 'scan' and your ID becomes library-ready in seconds.",
-     "Scan this QR to set up your library ID—super quick, super easy."
+    "Admin tip: Use the Records view to review and export today's entries.",
+    "Pro tip: Use the search to find students quickly by name or ID.",
+    "Shortcut: Filter by date to focus on today's activity for reporting.",
+    "Quick task: Export a CSV from the Records tab for your daily log.",
+    "Best practice: Use the department filters to isolate specific programs.",
+    "Tip: Use the sort controls to group entries by college or year level.",
+    "Remember: Keep admin credentials secure and rotate passwords regularly."
   ]
 
   const [index, setIndex] = useState(0)

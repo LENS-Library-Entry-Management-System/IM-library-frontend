@@ -10,7 +10,7 @@ const SignIn: React.FC = () => {
       <div className="hidden lg:flex lg:flex-1">
         <Welcome />
       </div>
-      <div className="flex w-full lg:w-[40%] items-center justify-center bg-gray-60 px-0">
+      <div className="flex w-full lg:w-[45%] items-center justify-center bg-gray-60 px-0">
         <div className="w-full max-w-xl p-6 mx-auto">
           <div className="mb-8">
             <h1 className="text-5xl font-extrabold text-gradient">Hello Admin!</h1>
