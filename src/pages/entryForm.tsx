@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import StudentForm, { type StudentValues } from '@/components/form/formComponent'
+import Welcome from '@/components/dashboard/welcome'
+import Logo from '@/assets/logo.svg'
 import { useQuery } from '@tanstack/react-query'
 import { getUserByToken } from '@/api/users'
 import { useUpsertUser } from '@/hooks/form/useUpsertUser'
@@ -130,15 +132,29 @@ const EntryForm = () => {
   }
 
   return (
-    <div className="flex items-center justify-center py-8 px-4">
-      <div className="w-full max-w-xl">
-        {displayName ? (
-          <h1 className="text-2xl font-semibold mb-4">{`Welcome ${displayName}! Edit ur details below!`}</h1>
-        ) : (
-          <h1 className="text-2xl font-semibold mb-4">Complete your registration</h1>
-        )}
+    <div className="flex h-screen w-full">
+      <div className="hidden lg:flex lg:flex-1">
+        <Welcome />
+      </div>
 
-        <StudentForm initialValues={initialValues} submitText={upsert.status === 'pending' ? 'Saving...' : 'Save'} onSubmit={handleSubmit} />
+      <div className="flex w-full lg:w-[45%] items-center justify-center bg-gray-60 px-0">
+        <div className="w-full max-w-xl p-6 mx-auto">
+          <div className="mb-8">
+            <h2 className="text-3xl font-light text-gray-400">Welcome,</h2>
+            <h1 className="text-5xl font-extrabold text-gradient">{displayName || 'Student'}</h1>
+            <h3 className="text-sm font-light text-gray-400">Please complete your information below</h3>
+          </div>
+          
+          <StudentForm initialValues={initialValues} submitText={upsert.status === 'pending' ? 'Saving...' : 'Save'} onSubmit={handleSubmit} />
+        </div>
+          <div className="absolute bottom-10 left-0 right-0 flex justify-center lg:hidden">
+          <img
+            src={Logo}
+            alt="LENS Logo"
+            className="w-30 h-auto"
+          />
+        </div>
+      
       </div>
     </div>
   )
