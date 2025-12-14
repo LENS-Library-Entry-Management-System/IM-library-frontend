@@ -2,7 +2,7 @@ import axios from "axios";
 import type { AxiosRequestHeaders, InternalAxiosRequestConfig } from "axios";
 
 const importMeta = import.meta as unknown as { env?: Record<string, string> };
-const API_BASE = importMeta.env?.VITE_API_BASE || "http://localhost:5001/api";
+const API_BASE = importMeta.env?.VITE_API_BASE || "http://localhost:5000/api";
 
 const client = axios.create({
   baseURL: API_BASE,

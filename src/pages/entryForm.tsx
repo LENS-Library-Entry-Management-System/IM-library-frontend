@@ -30,6 +30,8 @@ const EntryForm = () => {
       college: payload.college ?? '',
       department: payload.department ?? '',
       yearLevel: payload.yearLevel ?? '',
+      userType: payload.userType ?? 'student',
+      email: payload.email ?? '',
     }
     return iv
   }, [data])
@@ -42,13 +44,16 @@ const EntryForm = () => {
   const handleSubmit = (values: StudentValues) => {
     const payload = {
       token,
+      rfidTag: data?.data?.rfidTag,
       idNumber: values.studentId ?? '',
       firstName: values.firstName ?? '',
       lastName: values.lastName ?? '',
       college: values.college ?? '',
       department: values.department ?? '',
       yearLevel: values.yearLevel ?? '',
-      userType: 'student',
+      userType: values.userType ?? 'student',
+      status: data?.data?.status ?? 'active',
+      ...(values.email?.trim() ? { email: values.email.trim() } : {}),
     }
 
     upsert.mutate(payload, {
@@ -75,8 +80,8 @@ const EntryForm = () => {
           setShowCloseMessage(true)
         }, 300)
       },
-      onError: (err) => {
-        alert('Upsert failed: ' + String((err as Error)?.message ?? err))
+      onError: () => {
+        alert('Token expired')
       },
     })
   }
@@ -142,7 +147,11 @@ const EntryForm = () => {
           <div className="mb-8">
             <h2 className="text-3xl font-light text-gray-400">Welcome,</h2>
             <h1 className="text-5xl font-extrabold text-gradient">{displayName || 'Student'}</h1>
-            <h3 className="text-sm font-light text-gray-400">Please complete your information below</h3>
+            <h3 className="text-sm font-light text-gray-400">
+              {initialValues
+                ? 'Please edit your information below'
+                : 'Please complete your information below'}
+            </h3>
           </div>
           
           <StudentForm initialValues={initialValues} submitText={upsert.status === 'pending' ? 'Saving...' : 'Save'} onSubmit={handleSubmit} />
