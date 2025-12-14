@@ -8,6 +8,9 @@ import { type SortOption, useSort } from "@/components/table/sortStore"
 import { useSearch } from "@/components/table/searchStore"
 import { type EntryRow } from "@/api/entries"
 import { useEntries } from "@/hooks/tableRecords/useEntries"
+import { deleteEntriesByLogIds } from "@/api/entries"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useTableSelection } from "@/components/table/SelectionContext"
 
 type Row = {
   id: string
@@ -160,6 +163,37 @@ const TableRecords = () => {
       return c
     })
   }, [section])
+
+  // Selection + deletion wiring
+  const { selected, setOnDelete } = useTableSelection()
+  const qc = useQueryClient()
+  const bulkDelete = useMutation({
+    mutationFn: async () => {
+      const ids = selected
+        .map((s) => s.logId)
+        .filter((v): v is string => typeof v === 'string' && v.trim() !== '')
+      if (ids.length === 0) {
+        alert('No selectable entries on this page. Try another page.')
+        return
+      }
+      await deleteEntriesByLogIds(ids)
+    },
+    onSuccess: () => {
+      // Align with useEntries queryKey: ['entries', userType, query, page, limit, sort]
+      qc.invalidateQueries({ queryKey: ['entries', userType ?? 'all', String(query ?? ''), page, 10, backendSort ?? ''] })
+    },
+    onError: (err) => {
+      console.error('Bulk delete failed', err)
+      alert('Delete failed. Please try again.')
+    },
+  })
+
+  React.useEffect(() => {
+    // Provide a callable that directly invokes mutateAsync
+    setOnDelete(async () => {
+      await bulkDelete.mutateAsync()
+    })
+  }, [setOnDelete, bulkDelete])
 
   return (
     <div>

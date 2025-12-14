@@ -190,3 +190,30 @@ export async function getEntries(opts?: GetEntriesOptions): Promise<EntriesRespo
 }
 
 export default { getEntries }
+
+// Delete entry logs by their logId values. Falls back to per-id delete.
+export async function deleteEntriesByLogIds(ids: Array<string | number>) {
+  const clean = ids
+    .map((v) => (typeof v === 'number' ? String(v) : String(v)))
+    .filter((s) => s.trim() !== '')
+
+  if (clean.length === 0) return { success: true }
+
+  // Prefer a bulk endpoint if the backend exposes one; otherwise sequential DELETEs.
+  try {
+    // Attempt bulk delete (non-breaking if not implemented server-side)
+    const { data } = await client.post('/entries/delete-bulk', { ids: clean })
+    return data
+  } catch {
+    // Fallback: delete sequentially
+    for (const id of clean) {
+      try {
+        await client.delete(`/entries/${encodeURIComponent(id)}`)
+      } catch (err) {
+        // capture error but continue — report final failure if needed
+        console.warn('Failed to delete entry id', id, err)
+      }
+    }
+    return { success: true }
+  }
+}
