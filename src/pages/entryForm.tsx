@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import StudentForm, { type StudentValues } from '@/components/form/formComponent'
 import Welcome from '@/components/dashboard/welcome'
-import Logo from '@/assets/logo.svg'
 import { useQuery } from '@tanstack/react-query'
 import { getUserByToken } from '@/api/users'
 import { useUpsertUser } from '@/hooks/form/useUpsertUser'
@@ -162,14 +161,6 @@ const EntryForm = () => {
           
           <StudentForm initialValues={initialValues} submitText={upsert.status === 'pending' ? 'Saving...' : 'Save'} onSubmit={handleSubmit} />
         </div>
-          <div className="absolute bottom-10 left-0 right-0 flex justify-center lg:hidden">
-          <img
-            src={Logo}
-            alt="LENS Logo"
-            className="w-30 h-auto"
-          />
-        </div>
-      
       </div>
     </div>
   )
