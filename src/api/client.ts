@@ -1,11 +1,15 @@
 import axios from "axios";
-import type { AxiosRequestHeaders, InternalAxiosRequestConfig } from "axios";
+import type { InternalAxiosRequestConfig } from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
+console.log("Vercel Bypass Token:", import.meta.env.VITE_VERCEL_BYPASS_TOKEN);
 
 const client = axios.create({
   baseURL: API_BASE,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "x-vercel-protection-bypass": import.meta.env.VITE_VERCEL_BYPASS_TOKEN,
+  },
   withCredentials: false,
 });
 
@@ -21,12 +25,7 @@ client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   })();
 
   if (token) {
-    const existing = (config.headers || {}) as Record<string, string>;
-    const merged: Record<string, string> = {
-      ...existing,
-      Authorization: `Bearer ${token}`,
-    };
-    config.headers = merged as AxiosRequestHeaders;
+    config.headers.set("Authorization", `Bearer ${token}`);
   }
 
   return config;
