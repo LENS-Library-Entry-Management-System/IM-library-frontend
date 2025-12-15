@@ -19,6 +19,8 @@ export type StudentValues = {
   department?: string
   college?: string
   yearLevel?: string
+  userType?: 'student' | 'faculty'
+  email?: string
 }
 
 type StudentFormProps = {
@@ -35,6 +37,8 @@ const defaultValues: StudentValues = {
   department: "",
   college: "",
   yearLevel: "",
+  userType: "student",
+  email: "",
 }
 
 export function StudentForm({
@@ -68,16 +72,26 @@ export function StudentForm({
 
   const validate = (v: StudentValues) => {
     const newErrors: Record<string, string | undefined> = {}
-    if (!v.studentId?.trim()) newErrors.studentId = "Student ID is required"
+    if (!v.studentId?.trim()) newErrors.studentId = v.userType === 'faculty' ? "Faculty ID is required" : "Student ID is required"
     if (!v.lastName?.trim()) newErrors.lastName = "Last name is required"
     if (!v.firstName?.trim()) newErrors.firstName = "First name is required"
-    if (!v.college?.trim()) newErrors.college = "College is required"
-    if (!v.yearLevel?.trim()) newErrors.yearLevel = "Year level is required"
+    
+    if (v.email?.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(v.email.trim())) {
+        newErrors.email = "Invalid email format"
+      }
+    }
 
-    if (v.college && !collegesWithoutDepartment.has(v.college)) {
-      const deptOptions = departmentsByCollege[v.college] ?? []
-      if (deptOptions.length > 0 && !v.department?.trim()) {
-        newErrors.department = "Department is required"
+    if (v.userType === 'student') {
+      if (!v.college?.trim()) newErrors.college = "College is required"
+      if (!v.yearLevel?.trim()) newErrors.yearLevel = "Year level is required"
+
+      if (v.college && !collegesWithoutDepartment.has(v.college)) {
+        const deptOptions = departmentsByCollege[v.college] ?? []
+        if (deptOptions.length > 0 && !v.department?.trim()) {
+          newErrors.department = "Department is required"
+        }
       }
     }
     return newErrors
@@ -105,6 +119,33 @@ export function StudentForm({
     >
       <FieldSet>
         <FieldGroup>
+          {/* USER TYPE */}
+          <Field data-invalid={!!errors.userType}>
+            <div className="relative">
+              {errors.userType && (
+                <div className="absolute -top-2 left-4 z-10 bg-red-500 text-white text-xs px-3 py-1.5 rounded shadow-lg">
+                  <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-500 transform rotate-45"></div>
+                  {errors.userType}
+                </div>
+              )}
+              <div className={cn(wrapperClass, errors.userType && "border-red-500")}>
+                <span className={legendClass}>User Type</span>
+                <FieldContent>
+                  <Select
+                    name="userType"
+                    value={values.userType}
+                    onChange={handleChange("userType")}
+                    aria-describedby={errors.userType ? "userType-error" : undefined}
+                    className="border-0 shadow-none p-2 focus:ring-0 focus-visible:ring-0"
+                  >
+                    <option value="student">Student</option>
+                    <option value="faculty">Faculty</option>
+                  </Select>
+                </FieldContent>
+              </div>
+            </div>
+          </Field>
+
           {/* STUDENT ID */}
           <Field data-invalid={!!errors.studentId}>
             <div className="relative">
@@ -115,7 +156,7 @@ export function StudentForm({
                 </div>
               )}
               <div className={cn(wrapperClass, errors.studentId && "border-red-500")}>
-                <span className={legendClass}>Student ID</span>
+                <span className={legendClass}>{values.userType === 'faculty' ? 'Faculty ID' : 'Student ID'}</span>
                 <FieldContent>
                   <Input
                     name="studentId"
@@ -185,6 +226,32 @@ export function StudentForm({
               </div>
             </Field>
           </div>
+
+          {/* EMAIL */}
+          <Field data-invalid={!!errors.email}>
+            <div className="relative">
+              {errors.email && (
+                <div className="absolute -top-2 left-4 z-10 bg-red-500 text-white text-xs px-3 py-1.5 rounded shadow-lg">
+                  <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-500 transform rotate-45"></div>
+                  {errors.email}
+                </div>
+              )}
+              <div className={cn(wrapperClass, errors.email && "border-red-500")}>
+                <span className={legendClass}>Email</span>
+                <FieldContent>
+                  <Input
+                    name="email"
+                    value={values.email}
+                    onChange={handleChange("email")}
+                    placeholder="Text Here"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "email-error" : undefined}
+                    className="border-0 shadow-none p-2 focus:ring-0 focus-visible:ring-0"
+                  />
+                </FieldContent>
+              </div>
+            </div>
+          </Field>
 
           {/* COLLEGE */}
           <Field data-invalid={!!errors.college}>
@@ -256,6 +323,7 @@ export function StudentForm({
           </Field>
 
           {/* YEAR LEVEL */}
+          {values.userType === 'student' && (
           <Field data-invalid={!!errors.yearLevel}>
             <div className="relative">
               {errors.yearLevel && (
@@ -285,6 +353,7 @@ export function StudentForm({
               </div>
             </div>
           </Field>
+          )}
 
           {/* BUTTONS */}
           <div className="flex items-center justify-end gap-2">
