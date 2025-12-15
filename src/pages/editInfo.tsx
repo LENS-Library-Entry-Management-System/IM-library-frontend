@@ -1,7 +1,6 @@
 // React import required for hooks/types in this module
 import * as React from 'react'
 import Welcome from "@/components/dashboard/welcome"
-import Logo from "@/assets/logo.svg"
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
 import { useUpdateUser } from "@/hooks/form/useUpdateUser"
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -74,13 +73,6 @@ const EditInfo = () => {
             </div>
             
             <StudentForm initialValues={initial} submitText="Save" onSubmit={handleSubmit} />
-          </div>
-          <div className="absolute bottom-10 left-0 right-0 flex justify-center lg:hidden">
-            <img
-              src={Logo}
-              alt="LENS Logo"
-              className="w-30 h-auto"
-            />
           </div>
         </div>
       </div>

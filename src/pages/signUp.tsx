@@ -1,6 +1,5 @@
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
 import Welcome from "@/components/dashboard/welcome"
-import Logo from "@/assets/logo.svg"
 import { useCreateUser } from "@/hooks/form/useCreateUser"
 
 const SignUp = () => {
@@ -48,13 +47,6 @@ const SignUp = () => {
           </div>
           
           <StudentForm submitText="Sign Up" onSubmit={handleSubmit} />
-        </div>
-        <div className="absolute bottom-10 left-0 right-0 flex justify-center lg:hidden">
-          <img
-            src={Logo}
-            alt="LENS Logo"
-            className="w-30 h-auto"
-          />
         </div>
       </div>
     </div>
