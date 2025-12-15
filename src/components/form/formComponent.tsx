@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { yearLevels, colleges, departmentsByCollege } from "@/lib/colleges"
+import Logo from "@/assets/logo.svg"
 
 export type StudentValues = {
   studentId?: string
@@ -117,6 +118,14 @@ export function StudentForm({
       className={cn("w-full max-w-xl mx-auto space-y-6", className)}
       onSubmit={handleSubmit}
     >
+      {/* Logo - shown at top on mobile, hidden on desktop */}
+      <div className="flex justify-center mb-4 md:hidden">
+        <img
+          src={Logo}
+          alt="LENS Logo"
+          className="w-30 h-auto"
+        />
+      </div>
       <FieldSet>
         <FieldGroup>
           {/* USER TYPE */}
@@ -354,6 +363,15 @@ export function StudentForm({
             </div>
           </Field>
           )}
+
+          {/* Logo - shown after Year Level on desktop, hidden on mobile */}
+          <div className="flex justify-center my-6 hidden md:block">
+            <img
+              src={Logo}
+              alt="LENS Logo"
+              className="w-30 h-auto"
+            />
+          </div>
 
           {/* BUTTONS */}
           <div className="flex items-center justify-end gap-2">
