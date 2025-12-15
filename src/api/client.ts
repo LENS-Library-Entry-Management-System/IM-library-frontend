@@ -10,7 +10,7 @@ const client = axios.create({
     "Content-Type": "application/json",
     "x-vercel-protection-bypass": import.meta.env.VITE_VERCEL_BYPASS_TOKEN,
   },
-  withCredentials: false,
+  withCredentials: true,
 });
 
 // Attach access token if present
@@ -26,6 +26,18 @@ client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
   if (token) {
     config.headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const csrfToken = (() => {
+    try {
+      return localStorage.getItem("csrfToken");
+    } catch {
+      return null;
+    }
+  })();
+
+  if (csrfToken) {
+    config.headers.set("x-csrf-token", csrfToken);
   }
 
   return config;
