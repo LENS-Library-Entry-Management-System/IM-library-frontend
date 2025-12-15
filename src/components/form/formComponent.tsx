@@ -76,6 +76,13 @@ export function StudentForm({
     if (!v.lastName?.trim()) newErrors.lastName = "Last name is required"
     if (!v.firstName?.trim()) newErrors.firstName = "First name is required"
     
+    if (v.email?.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(v.email.trim())) {
+        newErrors.email = "Invalid email format"
+      }
+    }
+
     if (v.userType === 'student') {
       if (!v.college?.trim()) newErrors.college = "College is required"
       if (!v.yearLevel?.trim()) newErrors.yearLevel = "Year level is required"

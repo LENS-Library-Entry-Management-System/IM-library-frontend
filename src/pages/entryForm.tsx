@@ -42,17 +42,22 @@ const EntryForm = () => {
   }, [token])
 
   const handleSubmit = (values: StudentValues) => {
+    const isStudent = (values.userType ?? 'student') === 'student'
     const payload = {
       token,
       rfidTag: data?.data?.rfidTag,
       idNumber: values.studentId ?? '',
       firstName: values.firstName ?? '',
       lastName: values.lastName ?? '',
-      college: values.college ?? '',
-      department: values.department ?? '',
-      yearLevel: values.yearLevel ?? '',
       userType: values.userType ?? 'student',
       status: data?.data?.status ?? 'active',
+      ...(isStudent
+        ? {
+            college: values.college ?? '',
+            department: values.department ?? '',
+            yearLevel: values.yearLevel ?? '',
+          }
+        : {}),
       ...(values.email?.trim() ? { email: values.email.trim() } : {}),
     }
 
@@ -80,8 +85,9 @@ const EntryForm = () => {
           setShowCloseMessage(true)
         }, 300)
       },
-      onError: () => {
-        alert('Token expired')
+      onError: (err) => {
+        console.error('Upsert error:', err)
+        alert('Submission failed: ' + String((err as Error)?.message ?? 'Unknown error'))
       },
     })
   }
