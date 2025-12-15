@@ -188,12 +188,16 @@ const TableRecords = () => {
     },
   })
 
+  const { mutateAsync } = bulkDelete
+
   React.useEffect(() => {
     // Provide a callable that directly invokes mutateAsync
-    setOnDelete(async () => {
-      await bulkDelete.mutateAsync()
+    // We must pass a function that returns the handler, because setOnDelete is a useState setter
+    // and would otherwise execute the handler immediately as a functional update.
+    setOnDelete(() => async () => {
+      await mutateAsync()
     })
-  }, [setOnDelete, bulkDelete])
+  }, [setOnDelete, mutateAsync])
 
   return (
     <div>

@@ -22,6 +22,13 @@ export async function login(username: string, password: string): Promise<LoginRe
     // Normalize to return the inner `data` object when present so callers get tokens directly.
     if (data && typeof data === 'object' && 'data' in data) {
       const envelope = data as ApiEnvelope<LoginResponse>
+      
+      // Attempt to extract CSRF token if present
+      const csrfToken = envelope['csrfToken'] || (envelope.data && (envelope.data as Record<string, unknown>)['csrfToken']);
+      if (csrfToken) {
+        localStorage.setItem('csrfToken', csrfToken as string);
+      }
+
       if (envelope.data && typeof envelope.data === 'object') return envelope.data as LoginResponse
     }
     return data as LoginResponse
