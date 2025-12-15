@@ -7,6 +7,7 @@ import SearchProvider from "@/components/table/SearchContext"
 import { LayoutProvider } from "@/components/layout/LayoutContext"
 import Sidebar from "@/components/sidebar/sidebar"
 import Header from "@/components/header/header"
+import { TableSelectionProvider } from "@/components/table/SelectionContext"
 
 const Records: React.FC = () => {
   return (
@@ -21,11 +22,12 @@ const Records: React.FC = () => {
               <SortProvider>
                 <SearchProvider>
 
-                  <Header />
-
-                  <div className="mt-5">
-                    <TableRecords />
-                  </div>
+                  <TableSelectionProvider>
+                    <Header />
+                    <div className="mt-5">
+                      <TableRecords />
+                    </div>
+                  </TableSelectionProvider>
 
                 </SearchProvider>
               </SortProvider>

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/pagination"
 import { Button } from "@/components/ui/button"
 import { useTableFilter } from "@/components/table/tableFilterStore"
+import { useTableSelection } from "@/components/table/SelectionContext"
 
 type CellValue = React.ReactNode | string | number | null | undefined
 
@@ -84,6 +85,7 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
 }) => {
   const [selected, setSelected] = React.useState<Record<string, boolean>>({})
   const [localPage, setLocalPage] = React.useState(1)
+  const { setSelected: setSelectedContext } = useTableSelection()
 
   // Helper to compute a stable, unique key for a row.
   // Prefer backend logId (unique entry id). If missing, combine user id + timestamp.
@@ -139,6 +141,23 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
       })
     }
   }
+
+  // Publish selection changes to the shared context with minimal identifiers
+  React.useEffect(() => {
+    const items = pageRows
+      .map((row, i) => {
+        const key = String(getRowKey(row as Row, i))
+        if (!selected[key]) return null
+        const logIdRaw = (row as Record<string, unknown>)["logId"] ?? (row as Record<string, unknown>)["log_id"]
+        const userIdRaw = (row as Record<string, unknown>)["userId"] ?? (row as Record<string, unknown>)["user_id"]
+        const logId = typeof logIdRaw === "string" ? logIdRaw : typeof logIdRaw === "number" ? String(logIdRaw) : undefined
+        const userId = typeof userIdRaw === "string" ? userIdRaw : typeof userIdRaw === "number" ? String(userIdRaw) : undefined
+        return { key, logId, userId }
+      })
+      .filter(Boolean) as { key: string; logId?: string; userId?: string }[]
+    setSelectedContext(items)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, pageRows])
 
   const effectiveColumns: Column[] = React.useMemo(() => {
     if (columns && columns.length) return columns

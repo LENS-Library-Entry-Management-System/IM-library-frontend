@@ -4,7 +4,7 @@ import type { SectionKey } from "@/components/layout/LayoutContext"
 import logo from "@/assets/logo.svg"
 import intersect from "@/assets/Intersect.svg"
 
-import { LayoutDashboard, Users, Building2, HelpCircle } from "lucide-react"
+import { LayoutDashboard, Users, Building2 } from "lucide-react"
 import type { JSX } from "react"
 
 type ItemType = { key: SectionKey; label: string; icon: JSX.Element }
@@ -13,7 +13,6 @@ const items: ItemType[] = [
   { key: "All", label: "All", icon: <LayoutDashboard size={18} /> },
   { key: "Students", label: "Students", icon: <Users size={18} /> },
   { key: "Faculties", label: "Faculties", icon: <Building2 size={18} /> },
-  { key: "Status", label: "Status", icon: <HelpCircle size={18} /> },
 ]
 
 export default function Sidebar() {
