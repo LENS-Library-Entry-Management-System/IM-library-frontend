@@ -4,6 +4,7 @@ import Welcome from "@/components/dashboard/welcome"
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
 import { useUpdateUser } from "@/hooks/form/useUpdateUser"
 import { useLocation, useNavigate } from 'react-router-dom'
+import { toast } from "sonner"
 
 const EditInfo = () => {
   const location = useLocation()
@@ -16,6 +17,7 @@ const EditInfo = () => {
     department: state.initialValues?.department ?? "",
     college: state.initialValues?.college ?? "",
     yearLevel: state.initialValues?.yearLevel ?? "",
+    userType: state.initialValues?.userType ?? "student",
   }
 
   const update = useUpdateUser()
@@ -34,7 +36,7 @@ const EditInfo = () => {
     // Require a valid userId. If missing, abort and navigate back.
     const userId = state.userId
     if (!userId) {
-      alert('No user selected for editing. Returning to records.')
+      toast.warning('No user selected for editing. Returning to records.')
       navigate('/records', { replace: true })
       return
     }
@@ -48,14 +50,15 @@ const EditInfo = () => {
       college: values.college,
       department: values.department,
       yearLevel: values.yearLevel,
+      userType: values.userType,
     }
 
     update.mutate(payload, {
       onSuccess: () => {
-        alert('Student information updated.')
+        toast.success(`${values.userType === 'faculty' ? 'Faculty' : 'Student'} information updated.`)
       },
       onError: (err: unknown) => {
-        alert('Update failed: ' + String((err as Error)?.message ?? err))
+        toast.error('Update failed: ' + String((err as Error)?.message ?? err))
       },
     })
   }
@@ -69,7 +72,7 @@ const EditInfo = () => {
           <div className="w-full max-w-xl p-6 mx-auto">
             <div className="mb-8">
               <h2 className="text-3xl font-light text-gray-400">Edit Info</h2>
-              <h1 className="text-5xl font-extrabold text-gradient">Student</h1>
+              <h1 className="text-5xl font-extrabold text-gradient">{initial.userType === 'faculty' ? 'Faculty' : 'Student'}</h1>
             </div>
             
             <StudentForm initialValues={initial} submitText="Save" onSubmit={handleSubmit} />

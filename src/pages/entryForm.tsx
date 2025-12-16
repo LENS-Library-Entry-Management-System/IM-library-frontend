@@ -5,6 +5,7 @@ import Welcome from '@/components/dashboard/welcome'
 import { useQuery } from '@tanstack/react-query'
 import { getUserByToken } from '@/api/users'
 import { useUpsertUser } from '@/hooks/form/useUpsertUser'
+import { toast } from "sonner"
 
 const EntryForm = () => {
   const [searchParams] = useSearchParams()
@@ -30,7 +31,6 @@ const EntryForm = () => {
       department: payload.department ?? '',
       yearLevel: payload.yearLevel ?? '',
       userType: payload.userType ?? 'student',
-      email: payload.email ?? '',
     }
     return iv
   }, [data])
@@ -57,12 +57,11 @@ const EntryForm = () => {
             yearLevel: values.yearLevel ?? '',
           }
         : {}),
-      ...(values.email?.trim() ? { email: values.email.trim() } : {}),
     }
 
     upsert.mutate(payload, {
       onSuccess: () => {
-        alert('User created/updated successfully')
+        toast.success('User created/updated successfully')
         // Try to close the tab (works if opened by script). If blocked,
         // show a friendly message instructing the user they may close the page.
         try {
@@ -86,7 +85,7 @@ const EntryForm = () => {
       },
       onError: (err) => {
         console.error('Upsert error:', err)
-        alert('Submission failed: ' + String((err as Error)?.message ?? 'Unknown error'))
+        toast.error('Submission failed: ' + String((err as Error)?.message ?? 'Unknown error'))
       },
     })
   }

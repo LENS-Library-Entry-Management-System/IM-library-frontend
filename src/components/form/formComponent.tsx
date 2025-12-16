@@ -21,7 +21,6 @@ export type StudentValues = {
   college?: string
   yearLevel?: string
   userType?: 'student' | 'faculty'
-  email?: string
 }
 
 type StudentFormProps = {
@@ -39,7 +38,6 @@ const defaultValues: StudentValues = {
   college: "",
   yearLevel: "",
   userType: "student",
-  email: "",
 }
 
 export function StudentForm({
@@ -76,13 +74,6 @@ export function StudentForm({
     if (!v.studentId?.trim()) newErrors.studentId = v.userType === 'faculty' ? "Faculty ID is required" : "Student ID is required"
     if (!v.lastName?.trim()) newErrors.lastName = "Last name is required"
     if (!v.firstName?.trim()) newErrors.firstName = "First name is required"
-    
-    if (v.email?.trim()) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(v.email.trim())) {
-        newErrors.email = "Invalid email format"
-      }
-    }
 
     if (v.userType === 'student') {
       if (!v.college?.trim()) newErrors.college = "College is required"
@@ -236,32 +227,6 @@ export function StudentForm({
             </Field>
           </div>
 
-          {/* EMAIL */}
-          <Field data-invalid={!!errors.email}>
-            <div className="relative">
-              {errors.email && (
-                <div className="absolute -top-2 left-4 z-10 bg-red-500 text-white text-xs px-3 py-1.5 rounded shadow-lg">
-                  <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-500 transform rotate-45"></div>
-                  {errors.email}
-                </div>
-              )}
-              <div className={cn(wrapperClass, errors.email && "border-red-500")}>
-                <span className={legendClass}>Email</span>
-                <FieldContent>
-                  <Input
-                    name="email"
-                    value={values.email}
-                    onChange={handleChange("email")}
-                    placeholder="Text Here"
-                    aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? "email-error" : undefined}
-                    className="border-0 shadow-none p-2 focus:ring-0 focus-visible:ring-0"
-                  />
-                </FieldContent>
-              </div>
-            </div>
-          </Field>
-
           {/* COLLEGE */}
           <Field data-invalid={!!errors.college}>
             <div className="relative">
@@ -364,8 +329,8 @@ export function StudentForm({
           </Field>
           )}
 
-          {/* Logo - shown after Year Level on desktop, hidden on mobile */}
-          <div className="flex justify-center my-6 hidden md:block">
+          {/* Logo - shown after Year Level on mobile, hidden on desktop */}
+          <div className="flex justify-center my-6 block md:hidden">
             <img
               src={Logo}
               alt="LENS Logo"
