@@ -4,8 +4,9 @@ import type { SectionKey } from "@/components/layout/LayoutContext"
 import logo from "@/assets/logo.svg"
 import intersect from "@/assets/Intersect.svg"
 
-import { LayoutDashboard, Users, Building2 } from "lucide-react"
+import { LayoutDashboard, Users, Building2, LogOut } from "lucide-react"
 import type { JSX } from "react"
+import { useNavigate } from "react-router-dom"
 
 type ItemType = { key: SectionKey; label: string; icon: JSX.Element }
 
@@ -17,6 +18,12 @@ const items: ItemType[] = [
 
 export default function Sidebar() {
   const { section, setSection } = useLayout()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.clear()
+    navigate("/sign-in")
+  }
 
   return (
     <aside
@@ -42,7 +49,7 @@ export default function Sidebar() {
       </div>
 
       {/* Buttons */}
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-col gap-2 flex-1">
         {items.map((item) => {
           const isActive = section === item.key
           return (
@@ -63,6 +70,21 @@ export default function Sidebar() {
           )
         })}
       </nav>
+
+      {/* Logout Button */}
+      <button
+        onClick={handleLogout}
+        className="
+          flex items-center gap-3 px-4 py-2 rounded-lg text-sm
+          transition
+          text-red-600 hover:bg-red-50 mt-auto
+        "
+      >
+        <span className="text-red-600">
+          <LogOut size={18} />
+        </span>
+        Logout
+      </button>
 
       {/* Background decoration */}
       <img
