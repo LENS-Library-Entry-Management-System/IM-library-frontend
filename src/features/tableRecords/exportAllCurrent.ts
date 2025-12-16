@@ -3,6 +3,7 @@ import { type EntriesResponse } from '@/api/entries'
 import { useLayout } from '@/components/layout/useLayout'
 import { useSearch } from '@/components/table/searchStore'
 import { useSort, type SortOption } from '@/components/table/sortStore'
+import { toast } from "sonner"
 
 function mapSortToBackend(s: SortOption | undefined): string | undefined {
   switch (s) {
@@ -180,7 +181,7 @@ export function useExportAllCurrent() {
       downloadBlob(csv, filename)
     } catch (err) {
       console.error('Export failed', err)
-      alert('Export failed. Please try again.')
+      toast.error('Export failed. Please try again.')
     }
   }
 }
