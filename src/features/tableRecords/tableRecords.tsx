@@ -11,6 +11,7 @@ import { useEntries } from "@/hooks/tableRecords/useEntries"
 import { deleteEntriesByLogIds } from "@/api/entries"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTableSelection } from "@/components/table/SelectionContext"
+import { toast } from "sonner"
 
 type Row = {
   id: string
@@ -173,7 +174,7 @@ const TableRecords = () => {
         .map((s) => s.logId)
         .filter((v): v is string => typeof v === 'string' && v.trim() !== '')
       if (ids.length === 0) {
-        alert('No selectable entries on this page. Try another page.')
+        toast.warning('No selectable entries on this page. Try another page.')
         return
       }
       await deleteEntriesByLogIds(ids)
@@ -184,7 +185,7 @@ const TableRecords = () => {
     },
     onError: (err) => {
       console.error('Bulk delete failed', err)
-      alert('Delete failed. Please try again.')
+      toast.error('Delete failed. Please try again.')
     },
   })
 
@@ -213,6 +214,8 @@ const TableRecords = () => {
           // Map an entry row to the edit page initial values and navigate
           const r = row as Record<string, unknown>
           const userId = (r['userId'] ?? r['user_id'] ?? r['id']) as string | undefined
+          const role = String(r['role'] ?? 'student')
+          const userType = (role === 'faculty' ? 'faculty' : 'student') as 'student' | 'faculty'
           const initialValues = {
             studentId: String(r['id'] ?? ''),
             firstName: String(r['firstName'] ?? ''),
@@ -220,6 +223,7 @@ const TableRecords = () => {
             department: String(r['department'] ?? ''),
             college: String(r['college'] ?? ''),
             yearLevel: String(r['yearLevel'] ?? ''),
+            userType,
           }
           navigate('/edit-info', { state: { userId, initialValues } })
         }}

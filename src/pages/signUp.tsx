@@ -1,6 +1,7 @@
 import StudentForm, { type StudentValues } from "@/components/form/formComponent"
 import Welcome from "@/components/dashboard/welcome"
 import { useCreateUser } from "@/hooks/form/useCreateUser"
+import { toast } from "sonner"
 
 const SignUp = () => {
   const create = useCreateUser()
@@ -24,11 +25,10 @@ const SignUp = () => {
 
     create.mutate(payload, {
       onSuccess: () => {
-        // simple feedback — replace with app toast when available
-        alert('Student account created successfully')
+        toast.success('Student account created successfully')
       },
       onError: (err: unknown) => {
-        alert('Create failed: ' + String((err as Error)?.message ?? err))
+        toast.error('Create failed: ' + String((err as Error)?.message ?? err))
       },
     })
   }

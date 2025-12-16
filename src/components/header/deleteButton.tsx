@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Trash2Icon } from "lucide-react"
+import { toast } from "sonner"
 
 type Props = {
   onDelete?: () => void | Promise<void>
@@ -35,7 +36,7 @@ export default function DeleteButton({
     } catch (err) {
       // keep feedback minimal in UI; follow project logging norm
       console.error("Delete action failed:", err)
-      alert("Delete failed. Please try again.")
+      toast.error("Delete failed. Please try again.")
     }
   }
 
