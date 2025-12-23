@@ -1,11 +1,12 @@
 import * as React from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import ReusableTable from "@/components/table/reusableTable"
 import { rows as mockRows } from "@/mockData/records"
 import { columns } from "./columns"
 import { useLayout } from "@/components/layout/useLayout"
 import { type SortOption, useSort } from "@/components/table/sortStore"
 import { useSearch } from "@/components/table/searchStore"
+import { useOptionalYearLevel } from "@/components/table/yearLevelStore"
 import { type EntryRow } from "@/api/entries"
 import { useEntries } from "@/hooks/tableRecords/useEntries"
 import { deleteEntriesByLogIds } from "@/api/entries"
@@ -72,10 +73,29 @@ const sortRows = (rowsData: Row[], option: SortOption) => {
 const TableRecords = () => {
   const { sort } = useSort()
   const { query } = useSearch()
+  const yearCtx = useOptionalYearLevel()
 
   const { section } = useLayout()
 
-  const [page, setPage] = React.useState<number>(1)
+  const location = useLocation()
+  const initialPage = React.useMemo(() => {
+    const state = (location.state as { page?: unknown } | null) || null
+    const p = Number(state?.page)
+    return Number.isFinite(p) && p > 0 ? p : 1
+  }, [location.state])
+  const [page, setPage] = React.useState<number>(initialPage)
+  // Clear router state after using the preserved page so it doesn't stick across refreshes
+  React.useEffect(() => {
+    const st = location.state as { page?: unknown } | null
+    if (st?.page != null) {
+      // Replace current entry without state to avoid sticky page on reload/back
+      navigate(location.pathname, { replace: true, state: undefined })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  // Capture the initial filter signature on mount to suppress auto-resets
+  const filterKey = `${section}|${String(query ?? '')}|${String(sort ?? '')}|${String(yearCtx?.yearLevel ?? 'all')}`
+  const initialFilterKeyRef = React.useRef<string | null>(null)
 
 
   // Map UI sort option to backend sort parameter
@@ -102,7 +122,8 @@ const TableRecords = () => {
   // and manages loading/refresh behavior; we send section/query/sort/page as keys.
   const backendSort = mapSortToBackend(sort)
   const userType = section === "Students" ? "student" : section === "Faculties" ? "faculty" : "all"
-  const entriesQuery = useEntries({ userType, query: String(query || "") || undefined, limit: 10, page, sort: backendSort })
+  const selectedYear = (yearCtx?.yearLevel && yearCtx.yearLevel !== 'all') ? String(yearCtx.yearLevel) : undefined
+  const entriesQuery = useEntries({ userType, query: String(query || "") || undefined, limit: 10, page, sort: backendSort, yearLevel: selectedYear })
 
   const isLoading = entriesQuery.isLoading
   const isError = entriesQuery.isError
@@ -111,10 +132,32 @@ const TableRecords = () => {
   const total = resp?.pagination?.total
   const data = resp?.entries ?? null
 
-  // Reset to first page when filters or sort change
+  // Initialize the baseline filter signature once on mount
   React.useEffect(() => {
-    setPage(1)
-  }, [section, query, sort])
+    if (initialFilterKeyRef.current == null) {
+      initialFilterKeyRef.current = filterKey
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Reset to first page when filters or sort change, but if we returned from
+  // Edit with a preserved page (>1) and filters are still identical to the
+  // baseline, do not reset. Once filters change from the baseline, re-enable
+  // normal reset behavior for future changes.
+  const returnedWithPageRef = React.useRef(initialPage > 1)
+  React.useEffect(() => {
+    const baseline = initialFilterKeyRef.current
+    const unchanged = baseline === filterKey
+    if (returnedWithPageRef.current && unchanged) return
+    // If this is the first actual change after return, drop the guard and reset
+    if (returnedWithPageRef.current && !unchanged) {
+      returnedWithPageRef.current = false
+      setPage(1)
+      return
+    }
+    // Regular behavior: any subsequent change resets to page 1
+    if (!returnedWithPageRef.current) setPage(1)
+  }, [filterKey])
 
   const navigate = useNavigate()
 
@@ -133,21 +176,34 @@ const TableRecords = () => {
 
   const displayedRows = React.useMemo(() => {
     if (useServerSide) return rowsSource
-
     const q = String(query || "").trim().toLowerCase()
-    // First filter rows based on the sidebar section selection (Students, Faculties, All)
-    const filteredBySection = rowsSource.filter((r) => {
+
+    const base = rowsSource.filter((r) => {
       if (section === "Students") return r.role === "student"
       if (section === "Faculties") return r.role === "faculty"
       return true
     })
 
-    if (!q) return filteredBySection
-    return filteredBySection.filter((r) => {
-      const fields = [r.id, r.firstName, r.lastName, r.department, r.college, r.logDate, r.logTime]
-      return fields.some((f) => String(f ?? "").toLowerCase().includes(q))
-    })
-  }, [rowsSource, query, section, useServerSide])
+    const afterSearch = q
+      ? base.filter((r) => {
+          const fields = [r.id, r.firstName, r.lastName, r.department, r.college, r.logDate, r.logTime]
+          return fields.some((f) => String(f ?? "").toLowerCase().includes(q))
+        })
+      : base
+
+    const selectedLevel = yearCtx?.yearLevel ?? "all"
+    const afterYear = selectedLevel === "all"
+      ? afterSearch
+      : afterSearch.filter((r) => {
+          const raw = String(r.yearLevel ?? "").toLowerCase()
+          // Extract the first digit in the string (e.g., "1st year" → "1")
+          const m = raw.match(/[0-9]/)
+          const digit = m ? m[0] : ""
+          return digit === String(selectedLevel)
+        })
+
+    return afterYear
+  }, [rowsSource, query, section, yearCtx, useServerSide])
 
   const sorted = React.useMemo(() => {
     if (useServerSide) return displayedRows
@@ -225,7 +281,7 @@ const TableRecords = () => {
             yearLevel: String(r['yearLevel'] ?? ''),
             userType,
           }
-          navigate('/edit-info', { state: { userId, initialValues } })
+          navigate('/edit-info', { state: { userId, initialValues, page } })
         }}
         serverSide
         totalCount={total}

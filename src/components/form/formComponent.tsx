@@ -330,7 +330,7 @@ export function StudentForm({
           )}
 
           {/* Logo - shown after Year Level on mobile, hidden on desktop */}
-          <div className="flex justify-center my-6 block md:hidden">
+          <div className="flex justify-center my-6 md:hidden">
             <img
               src={Logo}
               alt="LENS Logo"

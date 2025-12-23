@@ -16,7 +16,7 @@ export type EntryRow = {
   entryMethod?: string
   status?: string
   createdAt?: string
-  [key: string]: unknown
+  [key: string]: React.ReactNode | string | number | null | undefined
 }
 
 export type GetEntriesOptions = {
@@ -25,6 +25,7 @@ export type GetEntriesOptions = {
   page?: number
   limit?: number
   sort?: string
+  yearLevel?: string
 }
 
 // Fetch entries from backend. The backend README documents a protected GET /entries endpoint.
@@ -42,15 +43,17 @@ export async function getEntries(opts?: GetEntriesOptions): Promise<EntriesRespo
   try {
     // Decide whether to call the filter endpoint (POST) or the regular listing (GET)
     let responseData: unknown
-
-    if (opts?.query) {
+    const o: GetEntriesOptions = opts ?? {}
+    const shouldUseFilter = Boolean(o.query || (o.yearLevel && String(o.yearLevel).trim() !== ''))
+    if (shouldUseFilter) {
       const body: Record<string, unknown> = {
-        searchQuery: opts.query,
-        page: opts.page ?? 1,
-        limit: opts.limit ?? 10,
+        searchQuery: o.query,
+        page: o.page ?? 1,
+        limit: o.limit ?? 10,
       }
-      if (opts.userType && opts.userType !== 'all') body.userType = opts.userType
-      if (opts.sort) body.sort = opts.sort
+      if (o.userType && o.userType !== 'all') body.userType = o.userType
+      if (o.sort) body.sort = o.sort
+      if (o.yearLevel && String(o.yearLevel).trim() !== '') body.yearLevel = o.yearLevel
 
       console.log('Calling POST /entries/filter with body:', body)
       console.debug('getEntries (filter) body:', body)
@@ -58,14 +61,14 @@ export async function getEntries(opts?: GetEntriesOptions): Promise<EntriesRespo
       responseData = resp.data
     } else {
       const params: Record<string, unknown> = {}
-      if (opts?.userType && opts.userType !== 'all') params.userType = opts.userType
-      if (opts?.page) params.page = opts.page
-      if (opts?.limit) params.limit = opts.limit
+      if (o.userType && o.userType !== 'all') params.userType = o.userType
+      if (o.page) params.page = o.page
+      if (o.limit) params.limit = o.limit
 
-      if (opts?.sort) {
-        params.sort = opts.sort
-        if (typeof opts.sort === 'string' && opts.sort.includes(':')) {
-          const [byRaw, dirRaw] = opts.sort.split(':', 2)
+      if (o.sort) {
+        params.sort = o.sort
+        if (typeof o.sort === 'string' && o.sort.includes(':')) {
+          const [byRaw, dirRaw] = o.sort.split(':', 2)
           const by = String(byRaw ?? '')
           const dir = String(dirRaw ?? '')
           if (by) {
@@ -108,9 +111,9 @@ export async function getEntries(opts?: GetEntriesOptions): Promise<EntriesRespo
           const p = inner['pagination'] as Record<string, unknown>
           pagination = {
             total: Number(p['total'] ?? 0),
-            page: Number(p['page'] ?? opts?.page ?? 1),
-            limit: Number(p['limit'] ?? opts?.limit ?? (Array.isArray(inner['entries']) ? inner['entries'].length : 0)),
-            totalPages: Number(p['totalPages'] ?? Math.ceil((Number(p['total'] ?? 0) || (Array.isArray(inner['entries']) ? inner['entries'].length : 0)) / (Number(p['limit'] ?? opts?.limit ?? 1)))),
+            page: Number(p['page'] ?? o.page ?? 1),
+            limit: Number(p['limit'] ?? o.limit ?? (Array.isArray(inner['entries']) ? inner['entries'].length : 0)),
+            totalPages: Number(p['totalPages'] ?? Math.ceil((Number(p['total'] ?? 0) || (Array.isArray(inner['entries']) ? inner['entries'].length : 0)) / (Number(p['limit'] ?? o.limit ?? 1)))),
           }
         }
       } else if (Array.isArray(top['entries'])) {
@@ -216,4 +219,101 @@ export async function deleteEntriesByLogIds(ids: Array<string | number>) {
     }
     return { success: true }
   }
+}
+
+// Fetch redacted (soft-deleted) entries
+export async function getRedactedEntries(opts?: { userType?: 'student' | 'faculty' | 'all'; page?: number; limit?: number; sort?: string }): Promise<EntriesResponse> {
+  const params: Record<string, unknown> = {}
+  if (opts?.userType && opts.userType !== 'all') params.userType = opts.userType
+  if (opts?.page) params.page = opts.page
+  if (opts?.limit) params.limit = opts.limit
+  if (opts?.sort) {
+    params.sort = opts.sort
+    if (typeof opts.sort === 'string' && opts.sort.includes(':')) {
+      const [byRaw, dirRaw] = opts.sort.split(':', 2)
+      const by = String(byRaw ?? '')
+      const dir = String(dirRaw ?? '')
+      if (by) {
+        params.sortBy = by
+        params.sort_by = by
+        params.sortField = by
+      }
+      if (dir) {
+        params.order = dir
+        params.sort_dir = dir
+        params.sortDir = dir
+      }
+    }
+  }
+
+  const resp = await client.get('/entries/redacted', { params })
+  const responseData = resp.data as {
+    data?: {
+      entries?: unknown[]
+      pagination?: { total?: number; page?: number; limit?: number; totalPages?: number }
+    }
+  }
+  let rawEntries: unknown[] = []
+  let pagination: EntriesResponse['pagination'] | undefined
+
+  if (Array.isArray(responseData?.data?.entries)) {
+    rawEntries = responseData.data.entries
+    const p = responseData.data.pagination || {}
+    pagination = {
+      total: Number(p.total ?? 0),
+      page: Number(p.page ?? opts?.page ?? 1),
+      limit: Number(p.limit ?? opts?.limit ?? 10),
+      totalPages: Number(p.totalPages ?? Math.ceil((Number(p.total ?? 0)) / (Number(p.limit ?? opts?.limit ?? 1) || 1))),
+    }
+  }
+
+  const mapped = rawEntries.map((d: unknown) => {
+    const item = d as Record<string, unknown>
+    const user = (item['user'] as Record<string, unknown>) || {}
+
+    const rawTs = item['entryTimestamp'] ?? item['entry_timestamp'] ?? item['entryTimestamp']
+    const timestamp = typeof rawTs === 'number' ? (rawTs as number) : rawTs ? Date.parse(String(rawTs)) : undefined
+
+    const dateStr = timestamp ? new Date(timestamp).toLocaleDateString('en-US') : undefined
+    const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined
+
+    const logId = String(item['logId'] ?? item['log_id'] ?? '')
+
+    const fallbackUserId = String(user['idNumber'] ?? user['id_number'] ?? user['rfid_tag'] ?? user['userId'] ?? item['userId'] ?? item['user_id'] ?? '')
+    const id = fallbackUserId
+
+    const role = String(user['userType'] ?? user['user_type'] ?? user['role'] ?? 'student')
+
+    const firstName = String(user['firstName'] ?? user['first_name'] ?? '')
+    const lastName = String(user['lastName'] ?? user['last_name'] ?? '')
+    const department = String(user['department'] ?? '')
+    const college = String(user['college'] ?? '')
+    const yearLevel = String(user['yearLevel'] ?? user['year_level'] ?? '')
+
+    const userId = String(item['userId'] ?? item['user_id'] ?? '')
+    const entryMethod = String(item['entryMethod'] ?? item['entry_method'] ?? '')
+    const status = String(item['status'] ?? '')
+    const createdAt = item['createdAt'] ? String(item['createdAt']) : undefined
+
+    return {
+      ...item,
+      id,
+      role,
+      firstName,
+      lastName,
+      department,
+      college,
+      yearLevel,
+      logId,
+      userId,
+      entryMethod,
+      status,
+      createdAt,
+      logDate: dateStr,
+      logTime: timeStr,
+      logTimestamp: timestamp,
+    } as EntryRow
+  })
+
+  return { entries: mapped, pagination }
 }
