@@ -13,6 +13,7 @@ import { deleteEntriesByLogIds } from "@/api/entries"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTableSelection } from "@/components/table/SelectionContext"
 import { toast } from "sonner"
+import { useLogStream } from "@/hooks/useLogStream"
 
 type Row = {
   id: string
@@ -168,6 +169,9 @@ const TableRecords = () => {
     if (isLoading) return []
     return mockRows as unknown as EntryRow[]
   }, [data, isLoading, isError])
+
+  // Live updates: subscribe to SSE and refresh queries on new logs
+  useLogStream(true)
 
   // When using server-side fetching, the backend returns already-filtered and sorted rows.
   // Avoid applying client-side filter/sort in that case. This keeps behavior consistent with
