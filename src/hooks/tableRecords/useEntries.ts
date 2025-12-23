@@ -7,16 +7,17 @@ export type UseEntriesParams = {
   page?: number
   limit?: number
   sort?: string
+  yearLevel?: string
 }
 
 export function useEntries(params: UseEntriesParams, options?: { enabled?: boolean }) {
   const { userType, query, page = 1, limit = 10, sort } = params
 
-  const key = ['entries', userType ?? 'all', query ?? '', page, limit, sort ?? ''] as const
+  const key = ['entries', userType ?? 'all', query ?? '', page, limit, sort ?? '', params.yearLevel ?? ''] as const
 
   return useQuery({
     queryKey: key,
-    queryFn: () => getEntries({ userType, query, page, limit, sort }),
+    queryFn: () => getEntries({ userType, query, page, limit, sort, yearLevel: params.yearLevel }),
     staleTime: 1000 * 30, // 30s
     enabled: options?.enabled ?? true,
   })

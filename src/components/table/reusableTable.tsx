@@ -69,6 +69,8 @@ type ReusableTableProps = {
   totalCount?: number
   page?: number
   onPageChange?: (page: number) => void
+  // Optional: inject a Role column (used by Redacted page only)
+  injectRoleColumn?: boolean
 }
 
 const ReusableTable2: React.FC<ReusableTableProps> = ({
@@ -82,6 +84,7 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
   totalCount,
   page,
   onPageChange,
+  injectRoleColumn = false,
 }) => {
   const [selected, setSelected] = React.useState<Record<string, boolean>>({})
   const [localPage, setLocalPage] = React.useState(1)
@@ -110,12 +113,20 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
 
   const currentPage = serverSide ? (page ?? localPage) : localPage
 
-  const totalPages = serverSide && totalCount !== undefined ? Math.max(1, Math.ceil(totalCount / pageSize)) : Math.max(1, Math.ceil(data.length / pageSize))
+  // Compute total pages. For serverSide with unknown totalCount (loading), avoid
+  // falling back to data.length which is just the current page size and would
+  // incorrectly clamp navigation. Instead, assume at least the current page.
+  const totalPages = React.useMemo(() => {
+    if (!serverSide) return Math.max(1, Math.ceil(data.length / pageSize))
+    if (typeof totalCount === 'number') return Math.max(1, Math.ceil(totalCount / pageSize))
+    return Math.max(1, currentPage)
+  }, [serverSide, totalCount, data.length, pageSize, currentPage])
 
   React.useEffect(() => {
     if (!serverSide && localPage > totalPages) setLocalPage(totalPages)
-    if (serverSide && page && page > totalPages && onPageChange) onPageChange(totalPages)
-  }, [totalPages, localPage, serverSide, page, onPageChange])
+    // Only clamp server-side page if we know totalCount; during loading, avoid forcing page=1
+    if (serverSide && typeof totalCount === 'number' && page && page > totalPages && onPageChange) onPageChange(totalPages)
+  }, [totalPages, localPage, serverSide, page, onPageChange, totalCount])
 
   const start = (currentPage - 1) * pageSize
   const pageRows = serverSide ? data : data.slice(start, start + pageSize)
@@ -160,13 +171,37 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
   }, [selected, pageRows])
 
   const effectiveColumns: Column[] = React.useMemo(() => {
-    if (columns && columns.length) return columns
+    let base: Column[]
+    if (columns && columns.length) base = [...columns]
+    else if (data && data.length) {
+      const keys = Object.keys(data[0]).filter((k) => k !== "id")
+      base = keys.map((k) => ({ key: k, header: k }))
+    } else base = []
 
-    if (!data || data.length === 0) return []
+    if (injectRoleColumn) {
+      const hasRole = base.some((c) => c.key === "role")
+      if (!hasRole) {
+        const roleCol: Column = {
+          key: "role",
+          header: "Role",
+          className: "text-sm capitalize",
+          render: (row: Row) => {
+            const u = (row["user"] as Record<string, unknown> | undefined) || undefined
+            const role = (row["role"]
+              ?? (u ? (u["userType"] as string | undefined) : undefined)
+              ?? (u ? (u["role"] as string | undefined) : undefined)
+              ?? (row["user_type"] as string | undefined)) as string | undefined
+            return (role ?? "").toString()
+          },
+        }
+        const nameIdx = base.findIndex((c) => c.key === "name")
+        if (nameIdx >= 0) base.splice(nameIdx + 1, 0, roleCol)
+        else base.unshift(roleCol)
+      }
+    }
 
-    const keys = Object.keys(data[0]).filter((k) => k !== "id")
-    return keys.map((k) => ({ key: k, header: k }))
-  }, [columns, data])
+    return base
+  }, [columns, data, injectRoleColumn])
 
   // Consume filter context. Create a stable default callback and override if a provider is present.
   const defaultIsSelected: (k: string) => boolean = React.useCallback((k: string): boolean => {
@@ -257,7 +292,7 @@ const ReusableTable2: React.FC<ReusableTableProps> = ({
                   <PaginationLink href="#" isActive={p === currentPage} onClick={(e: React.MouseEvent) => { e.preventDefault(); if (serverSide && onPageChange) onPageChange(Number(p)); else setLocalPage(Number(p)); }}>{String(p).padStart(2, "0")}</PaginationLink>
                 </PaginationItem>
               ))}
-              <PaginationNext href="#" onClick={(e: React.MouseEvent) => { e.preventDefault(); const next = Math.min(totalPages, currentPage + 1); if (serverSide && onPageChange) onPageChange(next); else setLocalPage(next); }} />
+              <PaginationNext href="#" onClick={(e: React.MouseEvent) => { e.preventDefault(); const capKnown = !serverSide || typeof totalCount === 'number'; const cap = capKnown ? totalPages : undefined; const next = cap ? Math.min(cap, currentPage + 1) : (currentPage + 1); if (serverSide && onPageChange) onPageChange(next); else setLocalPage(next); }} />
             </PaginationContent>
           </Pagination>
         </div>
