@@ -8,7 +8,7 @@ import { toast } from "sonner"
 
 const EditInfo = () => {
   const location = useLocation()
-  const state = (location.state ?? {}) as { userId?: number | string; initialValues?: StudentValues }
+  const state = (location.state ?? {}) as { userId?: number | string; initialValues?: StudentValues; page?: number }
 
   const initial: StudentValues = {
     studentId: state.initialValues?.studentId ?? "",
@@ -28,16 +28,16 @@ const EditInfo = () => {
   React.useEffect(() => {
     if (!state.userId) {
       // Optionally we could show an inline error; redirecting keeps the UX simple.
-      navigate('/records', { replace: true })
+      navigate('/records', { replace: true, state: { page: state.page ?? 1 } })
     }
-  }, [state.userId, navigate])
+  }, [state.userId, state.page, navigate])
 
   const handleSubmit = (values: StudentValues) => {
     // Require a valid userId. If missing, abort and navigate back.
     const userId = state.userId
     if (!userId) {
       toast.warning('No user selected for editing. Returning to records.')
-      navigate('/records', { replace: true })
+      navigate('/records', { replace: true, state: { page: state.page ?? 1 } })
       return
     }
 
@@ -56,6 +56,8 @@ const EditInfo = () => {
     update.mutate(payload, {
       onSuccess: () => {
         toast.success(`${values.userType === 'faculty' ? 'Faculty' : 'Student'} information updated.`)
+        // Navigate back to the records list, preserving the page where the edit started
+        navigate('/records', { replace: true, state: { page: state.page ?? 1 } })
       },
       onError: (err: unknown) => {
         toast.error('Update failed: ' + String((err as Error)?.message ?? err))
