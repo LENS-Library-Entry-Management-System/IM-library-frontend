@@ -23,39 +23,44 @@ export default function Header() {
   const redactedOnly = section === 'Redacted'
 
   return (
-    <header className="flex w-full items-start justify-between rounded-lg border bg-white p-4">
+    <header className="flex w-full rounded-lg border bg-white p-4 sm:items-start sm:justify-between flex-col sm:flex-row">
       
       <h1 className="text-3xl font-extrabold uppercase tracking-wide text-primary">
         {section}
       </h1>
 
-      <div className="flex flex-col items-end gap-3">
+      <div className="flex w-full sm:w-auto flex-col gap-3 items-stretch sm:items-end">
         
-        <div>
+        <div className="self-end">
           <DownloadButton onClick={() => setExportOpen(true)} />
           <ExportDialog open={exportOpen} onOpenChange={setExportOpen} userType={derivedUserType} redactedOnly={redactedOnly} />
           <ManualAddDialog open={manualOpen} onOpenChange={setManualOpen} />
         </div>
 
-        <div className="flex items-center gap-3">
-          <SearchInput />
-          <FilterButton />
-          {section !== 'Redacted' && (
-            <>
-              <Button
-                onClick={() => setManualOpen(true)}
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-xs font-medium text-white shadow-sm hover:bg-primary-foreground h-9"
-              >
-                Manual Add
-              </Button>
-              <DeleteButton
-                selectedCount={selectedCount}
-                onDelete={onDelete}
-                disabled={!selectedCount}
-                loading={false}
-              />
-            </>
-          )}
+        {/* Controls: on mobile, place Search below the buttons */}
+        <div className="flex w-full gap-3 sm:flex-row sm:items-center flex-col-reverse">
+          <div className="w-full sm:w-auto">
+            <SearchInput />
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <FilterButton />
+            {section !== 'Redacted' && (
+              <>
+                <Button
+                  onClick={() => setManualOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-xs font-medium text-white shadow-sm hover:bg-primary-foreground h-9"
+                >
+                  Manual Add
+                </Button>
+                <DeleteButton
+                  selectedCount={selectedCount}
+                  onDelete={onDelete}
+                  disabled={!selectedCount}
+                  loading={false}
+                />
+              </>
+            )}
+          </div>
         </div>
 
       </div>

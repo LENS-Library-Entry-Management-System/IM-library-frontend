@@ -270,7 +270,7 @@ function ChartLegendContent({
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-4",
+        "flex flex-wrap items-center justify-center gap-4",
         verticalAlign === "top" ? "pb-3" : "pt-3",
         className
       )}
@@ -285,7 +285,7 @@ function ChartLegendContent({
             <div
               key={item.value}
               className={cn(
-                "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3"
+                "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 min-w-0"
               )}
             >
               {itemConfig?.icon && !hideIcon ? (
@@ -298,7 +298,19 @@ function ChartLegendContent({
                   }}
                 />
               )}
-              {itemConfig?.label}
+              <span
+                className={cn(
+                  // On small screens, cap width and truncate; relax on sm+
+                  "truncate whitespace-nowrap overflow-hidden max-w-[140px] sm:max-w-none",
+                )}
+                title={
+                  typeof itemConfig?.label === "string"
+                    ? (itemConfig?.label as string)
+                    : undefined
+                }
+              >
+                {itemConfig?.label}
+              </span>
             </div>
           )
         })}

@@ -11,15 +11,17 @@ import Header from "@/components/header/header"
 import { TableSelectionProvider } from "@/components/table/SelectionContext"
 import AnalyticsPage from '@/pages/analytics'
 import RedactedTable from '@/features/tableRecords/redactedTable'
+import MobileRecordsAdapter from '@/features/tableRecords/MobileRecordsAdapter'
+import MobileRedactedAdapter from '@/features/tableRecords/MobileRedactedAdapter'
 import { useLayout } from '@/components/layout/useLayout'
 
 const RecordsContent: React.FC = () => {
   const { section } = useLayout()
   return (
-    <div className="flex h-screen w-full bg-[#F7F7FF] overflow-hidden">
+    <div className="flex h-dvh min-h-dvh w-full bg-[#F7F7FF] overflow-hidden">
       <Sidebar />
 
-      <main className="flex-1 flex flex-col overflow-y-auto px-5 md:py-3 lg:py-5">
+      <main className="flex-1 flex min-h-0 flex-col overflow-y-auto overflow-x-hidden px-5 md:py-3 lg:py-5">
         <div className="w-full max-w-[1500px] mx-auto">
 
           {section === 'Analytics' ? (
@@ -32,7 +34,14 @@ const RecordsContent: React.FC = () => {
                     <TableSelectionProvider>
                       <Header />
                       <div className="mt-5">
-                        <RedactedTable />
+                        {/* Mobile cards */}
+                        <div className="block sm:hidden">
+                          <MobileRedactedAdapter />
+                        </div>
+                        {/* Desktop/table */}
+                        <div className="hidden sm:block">
+                          <RedactedTable />
+                        </div>
                       </div>
                     </TableSelectionProvider>
                   </YearLevelProvider>
@@ -40,14 +49,21 @@ const RecordsContent: React.FC = () => {
               </SortProvider>
             </TableFilterProvider>
           ) : (
-            <TableFilterProvider initialKeys={columns.map((c) => c.key)}>
+            <TableFilterProvider initialKeys={section === 'All' ? [...columns.map((c) => c.key), 'role'] : columns.map((c) => c.key)}>
               <SortProvider>
                 <SearchProvider>
                   <YearLevelProvider>
                     <TableSelectionProvider>
                       <Header />
                       <div className="mt-5">
-                        <TableRecords />
+                        {/* Mobile cards */}
+                        <div className="block sm:hidden">
+                          <MobileRecordsAdapter />
+                        </div>
+                        {/* Desktop/table */}
+                        <div className="hidden sm:block">
+                          <TableRecords />
+                        </div>
                       </div>
                     </TableSelectionProvider>
                   </YearLevelProvider>

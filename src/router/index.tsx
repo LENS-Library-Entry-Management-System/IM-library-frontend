@@ -6,6 +6,7 @@ import SignUp from '@/pages/signUp'
 import EditInfo from '@/pages/editInfo'
 import SignIn from '@/pages/signin'
 import EntryForm from '@/pages/entryForm'
+import LoadingSamples from '@/pages/loadingSamples'
 
 export default function Router() {
   return (
@@ -18,6 +19,7 @@ export default function Router() {
           <Route path="entry-form" element={<EntryForm />} />
           <Route path="edit-info" element={<EditInfo />} />
           <Route path="sign-in" element={<SignIn />} />
+          <Route path="loading-samples" element={<LoadingSamples />} />
         </Route>
       </Routes>
     </BrowserRouter>

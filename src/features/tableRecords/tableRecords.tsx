@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTableSelection } from "@/components/table/SelectionContext"
 import { toast } from "sonner"
 import { useLogStream } from "@/hooks/useLogStream"
+import WobbleFlipLoader from "@/components/ui/WobbleFlipLoader"
 
 type Row = {
   id: string
@@ -262,8 +263,17 @@ const TableRecords = () => {
 
   return (
     <div>
-      {isError ? <div className="mb-2 text-sm text-destructive">Error: {String((errorObj as Error)?.message ?? errorObj)}</div> : null}
-      {isLoading ? <div className="mb-2 text-sm text-muted-foreground">Loading entries...</div> : null}
+      {isError ? (
+        <div className="mb-2 flex flex-col items-center">
+          <WobbleFlipLoader size={56} src="/logo3.svg" />
+          <div className="mt-2 text-sm text-destructive">Error: {String((errorObj as Error)?.message ?? errorObj)}</div>
+        </div>
+      ) : null}
+      {isLoading ? (
+        <div className="mb-2 flex justify-center">
+          <WobbleFlipLoader size={56} />
+        </div>
+      ) : null}
       <ReusableTable
         data={sorted}
         columns={mappedColumns}
@@ -287,10 +297,11 @@ const TableRecords = () => {
           }
           navigate('/edit-info', { state: { userId, initialValues, page } })
         }}
-        serverSide
-        totalCount={total}
-        page={page}
-        onPageChange={(p) => setPage(p)}
+         serverSide
+         totalCount={total}
+         page={page}
+         onPageChange={(p) => setPage(p)}
+        injectRoleColumn={section === 'All'}
       />
     </div>
   )

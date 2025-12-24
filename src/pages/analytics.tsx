@@ -157,10 +157,10 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-extrabold uppercase tracking-wide text-primary">{section}</h1>
-        <div className="flex items-center gap-3 flex-wrap justify-end">
-          <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d' | '365d' | 'custom')} className="h-9 w-44 sm:w-56">
+        <div className="w-full sm:w-auto flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d' | '365d' | 'custom')} className="h-9 w-full sm:w-56">
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
@@ -168,10 +168,10 @@ export default function AnalyticsPage() {
             <option value="custom">Custom range</option>
           </Select>
           {timeRange === 'custom' && (
-            <div className="flex items-center gap-2">
-              <input type="date" className="h-9 rounded border px-2 text-sm" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
-              <span className="text-muted-foreground">to</span>
-              <input type="date" className="h-9 rounded border px-2 text-sm" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+            <div className="grid grid-cols-1 sm:flex sm:items-center gap-2">
+              <input aria-label="Start date" type="date" className="h-9 rounded border px-2 text-sm w-full sm:w-auto" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
+              <span className="hidden sm:inline text-muted-foreground">to</span>
+              <input aria-label="End date" type="date" className="h-9 rounded border px-2 text-sm w-full sm:w-auto" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
             </div>
           )}
         </div>
@@ -180,13 +180,13 @@ export default function AnalyticsPage() {
       {/* Stacked Area: Composition over time by College/Department (students only) */}
       <Card>
         <CardHeader className="border-b py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="text-lg font-semibold">Composition over time</div>
               <div className="text-sm text-muted-foreground">Students — by {computedGroupByArea}</div>
             </div>
             {/* College filter on header right */}
-            <Select value={areaCollege} onChange={(e)=>{ setAreaCollege(e.target.value) }} className="h-9 w-56">
+            <Select value={areaCollege} onChange={(e)=>{ setAreaCollege(e.target.value) }} className="h-9 w-full sm:w-56">
               <option value="">All colleges</option>
               <option value={ALL_DEPTS}>All departments</option>
               {collegeList.map(c => (<option key={c} value={c}>{c}</option>))}
@@ -212,13 +212,13 @@ export default function AnalyticsPage() {
       {/* Bar: Ranking by College/Department (single period) */}
       <Card>
         <CardHeader className="border-b py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="text-lg font-semibold">Ranking</div>
               <div className="text-sm text-muted-foreground">Entries by {computedGroupByRank}</div>
             </div>
             {/* College filter on header right */}
-            <Select value={rankCollege} onChange={(e)=>{ setRankCollege(e.target.value) }} className="h-9 w-56">
+            <Select value={rankCollege} onChange={(e)=>{ setRankCollege(e.target.value) }} className="h-9 w-full sm:w-56">
               <option value="">All colleges</option>
               <option value={ALL_DEPTS}>All departments</option>
               {collegeList.map(c => (<option key={c} value={c}>{c}</option>))}
